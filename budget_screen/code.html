@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Budget - Finance App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006c75",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#0f2223",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-2xl overflow-hidden">
+<!-- Header -->
+<header class="flex items-center justify-between p-6 pb-2">
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 p-2 rounded-full text-primary">
+<span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+</div>
+<h1 class="text-2xl font-extrabold tracking-tight">Budgets</h1>
+</div>
+<button class="flex size-10 items-center justify-center rounded-full bg-white dark:bg-slate-800 shadow-sm border border-primary/10">
+<span class="material-symbols-outlined text-primary">search</span>
+</button>
+</header>
+<!-- Summary Cards -->
+<div class="grid grid-cols-2 gap-4 p-6">
+<div class="flex flex-col gap-2 rounded-xl p-5 bg-white dark:bg-slate-800 border border-primary/5 shadow-sm">
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">payments</span>
+<p class="text-xs font-semibold uppercase tracking-wider">Budgeted</p>
+</div>
+<p class="text-2xl font-bold">$4,200</p>
+<div class="flex items-center gap-1 text-emerald-600 text-xs font-bold">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+5.2%</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-5 bg-white dark:bg-slate-800 border border-primary/5 shadow-sm">
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">shopping_cart</span>
+<p class="text-xs font-semibold uppercase tracking-wider">Spent</p>
+</div>
+<p class="text-2xl font-bold">$3,150</p>
+<div class="flex items-center gap-1 text-rose-500 text-xs font-bold">
+<span class="material-symbols-outlined text-sm">trending_down</span>
+<span>-2.1%</span>
+</div>
+</div>
+</div>
+<!-- Monthly Categories Section -->
+<div class="flex flex-col flex-1 px-6">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-bold">Monthly Categories</h2>
+<button class="text-primary text-sm font-bold flex items-center gap-1">
+                    See all <span class="material-symbols-outlined text-xs">arrow_forward_ios</span>
+</button>
+</div>
+<div class="flex flex-col gap-5 pb-32">
+<!-- Food & Groceries: Warning State -->
+<div class="flex flex-col gap-3 p-4 rounded-xl bg-white dark:bg-slate-800 border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 flex items-center justify-center">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<p class="text-sm font-bold">Food &amp; Groceries</p>
+<p class="text-[10px] text-slate-500 font-medium">Monthly recurring</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold">$850 <span class="text-slate-400 font-medium">/ $1,000</span></p>
+<p class="text-[10px] text-orange-600 font-bold uppercase tracking-tight">Near Limit</p>
+</div>
+</div>
+<div class="h-2.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-orange-500 rounded-full" style="width: 85%;"></div>
+</div>
+</div>
+<!-- Rent: Normal State -->
+<div class="flex flex-col gap-3 p-4 rounded-xl bg-white dark:bg-slate-800 border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined">home</span>
+</div>
+<div>
+<p class="text-sm font-bold">Rent &amp; Utilities</p>
+<p class="text-[10px] text-slate-500 font-medium">Fixed cost</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold">$1,200 <span class="text-slate-400 font-medium">/ $1,200</span></p>
+<p class="text-[10px] text-primary font-bold uppercase tracking-tight">On Track</p>
+</div>
+</div>
+<div class="h-2.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Leisure: Alert State -->
+<div class="flex flex-col gap-3 p-4 rounded-xl bg-white dark:bg-slate-800 border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 flex items-center justify-center">
+<span class="material-symbols-outlined">movie</span>
+</div>
+<div>
+<p class="text-sm font-bold">Entertainment</p>
+<p class="text-[10px] text-slate-500 font-medium">Leisure activities</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold">$450 <span class="text-slate-400 font-medium">/ $300</span></p>
+<p class="text-[10px] text-rose-600 font-bold uppercase tracking-tight">Exceeded</p>
+</div>
+</div>
+<div class="h-2.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-rose-500 rounded-full" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Transport: Normal State -->
+<div class="flex flex-col gap-3 p-4 rounded-xl bg-white dark:bg-slate-800 border border-primary/5 shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div>
+<p class="text-sm font-bold">Transport</p>
+<p class="text-[10px] text-slate-500 font-medium">Commuting costs</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold">$120 <span class="text-slate-400 font-medium">/ $250</span></p>
+<p class="text-[10px] text-emerald-600 font-bold uppercase tracking-tight">Saving</p>
+</div>
+</div>
+<div class="h-2.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 48%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button -->
+<button class="absolute bottom-24 right-6 flex size-14 items-center justify-center rounded-full bg-primary text-white shadow-xl hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md border-t border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg px-4 pb-8 pt-3 flex items-center justify-between">
+<a class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="text-[10px] font-bold">Dashboard</span>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">swap_horiz</span>
+<span class="text-[10px] font-bold">Transactions</span>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined fill-[1]">account_balance_wallet</span>
+<span class="text-[10px] font-bold">Budgets</span>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-bold">Settings</span>
+</a>
+</nav>
+</div>
+</body></html>

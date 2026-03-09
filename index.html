@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+<html lang="en" id="root">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>EQUITY – Finance Tracker</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script>tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#006c75", "bg-light": "#f5f8f8", "bg-dark": "#0f2223" }, fontFamily: { display: ["Manrope", "sans-serif"] },  } } }</script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      font-family: "Manrope", sans-serif;
+      margin: 0;
+      min-height: 100dvh;
+      overflow-x: hidden
+    }
+
+    .screen {
+      display: none;
+      min-height: 100dvh
+    }
+
+    .screen.active {
+      display: flex;
+      flex-direction: column
+    }
+
+    .mat {
+      font-family: "Material Symbols Outlined";
+      font-size: 24px;
+      font-weight: 400;
+      font-style: normal;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: "liga";
+      -webkit-font-smoothing: antialiased;
+      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+
+    .mat.fill {
+      font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #006c7540;
+      border-radius: 99px
+    }
+
+    .no-scroll {
+      overflow: hidden
+    }
+
+    .swipe-item {
+      position: relative;
+      overflow: hidden
+    }
+
+    .swipe-reveal {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ef4444;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 0 1rem 1rem 0;
+      opacity: 0;
+      transition: opacity .2s
+    }
+
+    .swipe-item.swiped .swipe-reveal {
+      opacity: 1
+    }
+
+    input[type=date] {
+      color-scheme: light
+    }
+
+    .dark input[type=date] {
+      color-scheme: dark
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    @keyframes slideup {
+      from {
+        transform: translateY(100%);
+        opacity: 0
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1
+      }
+    }
+
+    .animate-splash {
+      animation: pulse 1.5s infinite
+    }
+
+    .modal-enter {
+      animation: slideup .3s ease
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #006c75;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 999;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s
+    }
+
+    .toast.show {
+      opacity: 1
+    }
+  </style>
+</head>
+
+<body class="bg-[#f5f8f8] dark:bg-[#0f2223] text-slate-900 dark:text-slate-100 font-display">
+
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
+
+  <!-- =================== SPLASH =================== -->
+  <div id="screen-splash" class="screen active items-center justify-between flex-col"
+    style="background:linear-gradient(160deg,#f5f8f8 0%,#e0f0f1 100%)">
+    <div class="dark:hidden absolute inset-0 pointer-events-none"
+      style="background:linear-gradient(160deg,#f5f8f8,#d0ecee)"></div>
+    <div class="flex-1"></div>
+    <div class="flex flex-col items-center z-10">
+      <div class="relative w-32 h-32 flex items-center justify-center">
+        <div class="absolute inset-0 bg-[#006c75]/10 rounded-lg blur-2xl"></div>
+        <div
+          class="w-24 h-24 bg-[#006c75] rounded-lg rotate-45 flex items-center justify-center shadow-xl shadow-[#006c75]/30">
+          <div class="w-12 h-12 border-4 border-white/40 rounded-md -rotate-45"></div>
+          <div class="absolute w-6 h-6 bg-white/90 rounded-md -rotate-45"></div>
+        </div>
+      </div>
+      <div class="mt-10 text-center">
+        <h1 class="text-3xl font-light tracking-[.25em] text-slate-900 dark:text-white uppercase">EQUITY</h1>
+        <div class="h-1 w-8 bg-[#006c75] mx-auto mt-2 rounded-lg"></div>
+      </div>
+    </div>
+    <div class="flex-1 flex flex-col justify-end pb-16 z-10">
+      <div class="flex flex-col items-center gap-6">
+        <div class="flex space-x-2" id="splash-dots">
+          <div class="w-2 h-2 rounded-lg bg-[#006c75]/30 animate-splash" style="animation-delay:0s"></div>
+          <div class="w-2 h-2 rounded-lg bg-[#006c75]/60 animate-splash" style="animation-delay:.3s"></div>
+          <div class="w-2 h-2 rounded-lg bg-[#006c75] animate-splash" style="animation-delay:.6s"></div>
+        </div>
+        <p class="text-[#006c75] text-xs font-semibold tracking-[.2em] uppercase opacity-80">Financially Yours</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== DASHBOARD =================== -->
+  <div id="screen-dashboard" class="screen bg-[#f5f8f8] dark:bg-[#0f2223]">
+    <header
+      class="flex items-center p-4 justify-between sticky top-0 bg-[#f5f8f8]/80 dark:bg-[#0f2223]/80 backdrop-blur-md z-10 border-b border-[#006c75]/5">
+      <button onclick="showScreen('screen-settings')"
+        class="flex size-10 items-center justify-center rounded-lg bg-[#006c75]/10 text-[#006c75]"><span
+          class="mat">menu</span></button>
+      <h2 class="text-base font-bold">Dashboard</h2>
+      <div class="flex items-center gap-2">
+        <button onclick="openAIInsights()"
+          class="flex h-10 px-3 items-center justify-center gap-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 font-bold text-[10px] uppercase tracking-wider shadow-sm border border-indigo-100 dark:border-indigo-800">
+          <span class="mat text-[14px]">auto_awesome</span> AI
+        </button>
+        <button onclick="showNotif()"
+          class="flex size-10 items-center justify-center rounded-lg bg-[#006c75]/10 text-[#006c75] relative">
+          <span class="mat">notifications</span>
+          <span id="notif-dot" class="hidden absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-lg"></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="px-4 pt-3 flex items-center justify-between">
+      <p class="text-xs font-bold text-slate-500 dark:text-slate-400">Filter By</p>
+      <input type="month" id="db-month-filter" onchange="refreshDashboard()"
+        class="bg-white dark:bg-slate-800 text-[#006c75] dark:text-white font-bold text-sm px-3 py-1.5 rounded-md border border-[#006c75]/10 shadow-sm focus:ring-2 focus:ring-[#006c75]" />
+    </div>
+
+    <div class="flex-1 overflow-y-auto pb-32 max-w-md mx-auto w-full">
+      <!-- Balance Card -->
+      <div class="p-4">
+        <div class="relative overflow-hidden rounded-lg p-6 bg-[#006c75] text-white shadow-xl shadow-[#006c75]/30">
+          <div class="absolute top-0 right-0 -mr-12 -mt-12 w-56 h-56 bg-white/10 rounded-lg blur-3xl"></div>
+          <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-40 h-40 bg-white/5 rounded-lg blur-2xl"></div>
+          <div class="relative z-10">
+            <p class="text-white/70 text-xs font-medium mb-1 uppercase tracking-wider">Total Balance</p>
+            <p class="text-3xl font-extrabold tracking-tight mb-5" id="db-balance">$0.00</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-white/10 rounded-md p-3 backdrop-blur-sm">
+                <div class="flex items-center gap-1 mb-1"><span
+                    class="mat text-[14px] text-green-300">arrow_downward</span>
+                  <p class="text-white/60 text-[10px] font-semibold uppercase tracking-wider">Income</p>
+                </div>
+                <p class="text-lg font-bold" id="db-income">$0.00</p>
+              </div>
+              <div class="bg-white/10 rounded-md p-3 backdrop-blur-sm">
+                <div class="flex items-center gap-1 mb-1"><span
+                    class="mat text-[14px] text-orange-300">arrow_upward</span>
+                  <p class="text-white/60 text-[10px] font-semibold uppercase tracking-wider">Expenses</p>
+                </div>
+                <p class="text-lg font-bold" id="db-expense">$0.00</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Period Tabs -->
+      <div class="px-4 pb-2">
+        <div class="flex h-11 items-center rounded-lg bg-[#006c75]/8 dark:bg-[#006c75]/20 p-1 gap-1">
+          <button onclick="setDBPeriod('daily',this)"
+            class="period-btn flex-1 h-full rounded-lg text-sm font-semibold text-slate-500 dark:text-slate-400 transition-all">Daily</button>
+          <button onclick="setDBPeriod('weekly',this)"
+            class="period-btn flex-1 h-full rounded-lg text-sm font-semibold bg-white dark:bg-[#006c75] shadow-sm text-[#006c75] dark:text-white transition-all">Weekly</button>
+          <button onclick="setDBPeriod('monthly',this)"
+            class="period-btn flex-1 h-full rounded-lg text-sm font-semibold text-slate-500 dark:text-slate-400 transition-all">Monthly</button>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="px-4 grid grid-cols-1 gap-4">
+        <!-- Line Chart -->
+        <div class="bg-white dark:bg-slate-800/50 p-5 rounded-lg shadow-sm border border-[#006c75]/5">
+          <div class="flex justify-between items-center mb-3">
+            <p class="text-sm font-bold">Spending Trends</p>
+            <p class="text-[#006c75] text-xs font-bold bg-[#006c75]/10 px-2 py-1 rounded-lg" id="db-trend-pct">+0%</p>
+          </div>
+          <div class="flex items-baseline gap-2 mb-3">
+            <p class="text-xl font-bold" id="db-trend-val">$0.00</p>
+            <p class="text-slate-500 text-xs" id="db-trend-label">This week</p>
+          </div>
+          <svg id="line-chart" viewBox="0 0 360 100" class="w-full h-28" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="lg1" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#006c75" stop-opacity="0.25" />
+                <stop offset="100%" stop-color="#006c75" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <path id="line-area" fill="url(#lg1)" />
+            <path id="line-path" fill="none" stroke="#006c75" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+          <div id="line-labels"
+            class="flex justify-between mt-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest"></div>
+        </div>
+
+        <!-- Donut -->
+        <div class="bg-white dark:bg-slate-800/50 p-5 rounded-lg shadow-sm border border-[#006c75]/5">
+          <p class="text-sm font-bold mb-4">Expense Breakdown</p>
+          <div class="flex items-center gap-5">
+            <div class="relative w-24 h-24 shrink-0">
+              <svg id="donut-svg" viewBox="0 0 36 36" class="w-full h-full -rotate-90">
+                <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" stroke-width="4"
+                  class="dark:stroke-slate-700" />
+                <circle id="donut-arc1" cx="18" cy="18" r="16" fill="none" stroke="#006c75" stroke-width="4"
+                  stroke-linecap="round" stroke-dasharray="0 100" />
+                <circle id="donut-arc2" cx="18" cy="18" r="16" fill="none" stroke="#00a3af" stroke-width="4"
+                  stroke-linecap="round" stroke-dasharray="0 100" stroke-dashoffset="0" />
+                <circle id="donut-arc3" cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" stroke-width="4"
+                  stroke-linecap="round" stroke-dasharray="0 100" stroke-dashoffset="0" />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center"><span
+                  class="text-[10px] font-bold leading-tight" id="donut-center">$0</span></div>
+            </div>
+            <div class="flex-1 space-y-2" id="donut-legend"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="px-4 py-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-bold">Recent Transactions</h3>
+          <button onclick="showScreen('screen-transactions')" class="text-[#006c75] text-xs font-bold">See All</button>
+        </div>
+        <div id="db-recent" class="space-y-2"></div>
+        <div id="db-empty" class="hidden text-center py-8 text-slate-400 text-sm">No transactions yet.<br />Tap <b>+</b>
+          to add one!</div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button onclick="openAddModal()"
+      class="fixed bottom-24 right-6 flex size-14 items-center justify-center rounded-lg bg-[#006c75] text-white shadow-xl shadow-[#006c75]/40 hover:scale-105 active:scale-95 transition-transform z-20"><span
+        class="mat text-3xl">add</span></button>
+    <!-- Bottom Nav -->
+    <nav id="nav-dashboard"
+      class="fixed bottom-0 inset-x-0 max-w-md mx-auto flex items-center justify-around bg-white/90 dark:bg-[#0f2223]/90 backdrop-blur-md px-4 pb-5 pt-3 border-t border-[#006c75]/10 z-10">
+      <button onclick="showScreen('screen-dashboard')"
+        class="nav-item active-nav flex flex-col items-center gap-0.5 text-[#006c75]"><span
+          class="mat fill text-2xl">dashboard</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Home</p>
+      </button>
+      <button onclick="showScreen('screen-transactions')"
+        class="nav-item flex flex-col items-center gap-0.5 text-slate-400"><span
+          class="mat text-2xl">receipt_long</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Transactions</p>
+      </button>
+      <button onclick="showScreen('screen-budgets')"
+        class="nav-item flex flex-col items-center gap-0.5 text-slate-400"><span
+          class="mat text-2xl">account_balance_wallet</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Budgets</p>
+      </button>
+      <button onclick="showScreen('screen-reports')"
+        class="nav-item flex flex-col items-center gap-0.5 text-slate-400"><span class="mat text-2xl">analytics</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Reports</p>
+      </button>
+      <button onclick="showScreen('screen-settings')"
+        class="nav-item flex flex-col items-center gap-0.5 text-slate-400"><span class="mat text-2xl">settings</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Settings</p>
+      </button>
+    </nav>
+  </div>
+  <!-- =================== TRANSACTIONS =================== -->
+  <div id="screen-transactions" class="screen bg-[#f5f8f8] dark:bg-[#0f2223]">
+    <header
+      class="sticky top-0 z-10 bg-[#f5f8f8]/80 dark:bg-[#0f2223]/80 backdrop-blur-md px-4 pt-4 pb-2 border-b border-[#006c75]/5">
+      <div class="flex items-center justify-between mb-3">
+        <button onclick="showScreen('screen-dashboard')" class="p-2 rounded-lg bg-[#006c75]/10 text-[#006c75]"><span
+            class="mat">arrow_back</span></button>
+        <h1 class="text-base font-bold">Transactions</h1>
+        <button onclick="openAddModal()" class="p-2 rounded-lg bg-[#006c75]/10 text-[#006c75]"><span
+            class="mat">add</span></button>
+      </div>
+      <div class="relative mb-2">
+        <span class="mat absolute left-3 top-1/2 -translate-y-1/2 text-[#006c75]/60">search</span>
+        <input id="tx-search" oninput="renderTransactions()" type="text" placeholder="Search transactions…"
+          class="w-full pl-11 pr-4 py-2.5 bg-[#006c75]/5 dark:bg-[#006c75]/10 focus:ring-2 focus:ring-[#006c75] rounded-md border-none text-sm" />
+      </div>
+      <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <button onclick="setTxFilter('all',this)"
+          class="filter-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#006c75] text-white">All</button>
+        <button onclick="setTxFilter('income',this)"
+          class="filter-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#006c75]/8 text-[#006c75]">Income</button>
+        <button onclick="setTxFilter('expense',this)"
+          class="filter-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#006c75]/8 text-[#006c75]">Expense</button>
+        <button onclick="setTxFilter('custom',this)"
+          class="filter-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#006c75]/8 text-[#006c75] flex items-center gap-1"><span
+            class="mat text-[14px]">date_range</span>Custom</button>
+        <button onclick="setTxFilter('food',this)"
+          class="filter-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#006c75]/8 text-[#006c75]">Food</button>
+        <button onclick="setTxFilter('transport',this)"
+          class="filter-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#006c75]/8 text-[#006c75]">Transport</button>
+        <button onclick="setTxFilter('shopping',this)"
+          class="filter-btn shrink-0 px-4 py-1.5 rounded-lg text-xs font-semibond bg-[#006c75]/8 text-[#006c75]">Shopping</button>
+      </div>
+      <div id="tx-custom-dates" class="hidden flex gap-2 mt-2">
+        <input type="date" id="tx-date-start" onchange="renderTransactions()"
+          class="flex-1 bg-white dark:bg-slate-800 text-xs px-2 py-1.5 rounded-lg border border-[#006c75]/10" />
+        <input type="date" id="tx-date-end" onchange="renderTransactions()"
+          class="flex-1 bg-white dark:bg-slate-800 text-xs px-2 py-1.5 rounded-lg border border-[#006c75]/10" />
+      </div>
+    </header>
+    <div class="flex-1 overflow-y-auto px-4 pb-24 pt-2" id="tx-list"></div>
+    <button onclick="openAddModal()"
+      class="fixed bottom-6 right-6 flex size-14 items-center justify-center rounded-lg bg-[#006c75] text-white shadow-xl shadow-[#006c75]/40 z-20 hover:scale-105 active:scale-95 transition-transform"><span
+        class="mat text-3xl">add</span></button>
+  </div>
+
+  <!-- =================== BUDGETS =================== -->
+  <div id="screen-budgets" class="screen bg-[#f5f8f8] dark:bg-[#0f2223]">
+    <header
+      class="flex items-center justify-between p-4 sticky top-0 bg-[#f5f8f8]/80 dark:bg-[#0f2223]/80 backdrop-blur-md z-10 border-b border-[#006c75]/5">
+      <div class="flex items-center gap-2">
+        <div class="bg-[#006c75]/10 p-2 rounded-lg text-[#006c75]"><span class="mat">account_balance_wallet</span>
+        </div>
+        <h1 class="text-base font-bold">Budgets</h1>
+      </div>
+      <button onclick="openBudgetModal()"
+        class="flex size-10 items-center justify-center rounded-lg bg-[#006c75] text-white shadow-md"><span
+          class="mat">add</span></button>
+    </header>
+    <div class="flex-1 overflow-y-auto pb-24">
+      <div class="grid grid-cols-2 gap-3 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-md p-4 shadow-sm border border-[#006c75]/5">
+          <div class="flex items-center gap-1 text-slate-500 mb-1"><span class="mat text-sm">payments</span>
+            <p class="text-[10px] font-semibold uppercase tracking-wider">Budgeted</p>
+          </div>
+          <p class="text-xl font-bold" id="budget-total">$0</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-md p-4 shadow-sm border border-[#006c75]/5">
+          <div class="flex items-center gap-1 text-slate-500 mb-1"><span class="mat text-sm">shopping_cart</span>
+            <p class="text-[10px] font-semibold uppercase tracking-wider">Spent</p>
+          </div>
+          <p class="text-xl font-bold" id="budget-spent">$0</p>
+        </div>
+      </div>
+      <div class="px-4 space-y-3" id="budget-list"></div>
+      <div id="budget-empty" class="hidden text-center py-10 text-slate-400 text-sm">No budgets set.<br />Tap <b>+</b>
+        to add one!</div>
+    </div>
+    <!-- Fixed nav -->
+    <nav
+      class="fixed bottom-0 inset-x-0 max-w-md mx-auto flex items-center justify-around bg-white/90 dark:bg-[#0f2223]/90 backdrop-blur-md px-4 pb-5 pt-3 border-t border-[#006c75]/10 z-10">
+      <button onclick="showScreen('screen-dashboard')" class="flex flex-col items-center gap-0.5 text-slate-400"><span
+          class="mat text-2xl">dashboard</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Home</p>
+      </button>
+      <button onclick="showScreen('screen-transactions')"
+        class="flex flex-col items-center gap-0.5 text-slate-400"><span class="mat text-2xl">receipt_long</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Transactions</p>
+      </button>
+      <button onclick="showScreen('screen-budgets')" class="flex flex-col items-center gap-0.5 text-[#006c75]"><span
+          class="mat fill text-2xl">account_balance_wallet</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Budgets</p>
+      </button>
+      <button onclick="showScreen('screen-reports')" class="flex flex-col items-center gap-0.5 text-slate-400"><span
+          class="mat text-2xl">analytics</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Reports</p>
+      </button>
+      <button onclick="showScreen('screen-settings')" class="flex flex-col items-center gap-0.5 text-slate-400"><span
+          class="mat text-2xl">settings</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Settings</p>
+      </button>
+    </nav>
+  </div>
+
+  <!-- =================== REPORTS =================== -->
+  <div id="screen-reports" class="screen bg-[#f5f8f8] dark:bg-[#0f2223]">
+    <header class="flex items-center justify-between p-4 pt-5">
+      <div>
+        <h1 class="text-xl font-bold">Reports</h1>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="exportCSV()"
+          class="flex items-center gap-1 px-3 py-2 bg-[#006c75]/10 text-[#006c75] rounded-md text-xs font-bold"><span
+            class="mat text-base">description</span>CSV</button>
+        <button onclick="exportPDF()"
+          class="flex items-center gap-1 px-3 py-2 bg-[#006c75] text-white rounded-md text-xs font-bold shadow-md"><span
+            class="mat text-base">picture_as_pdf</span>PDF</button>
+      </div>
+    </header>
+
+    <!-- Reports Filters -->
+    <div class="px-4 pb-2">
+      <div class="flex gap-2 mb-2">
+        <input type="date" id="rep-date-start" onchange="renderReports()"
+          class="flex-1 bg-white dark:bg-slate-800 text-xs px-2 py-2 rounded-lg border border-[#006c75]/10 text-[#006c75] focus:ring-2 focus:ring-[#006c75]" />
+        <input type="date" id="rep-date-end" onchange="renderReports()"
+          class="flex-1 bg-white dark:bg-slate-800 text-xs px-2 py-2 rounded-lg border border-[#006c75]/10 text-[#006c75] focus:ring-2 focus:ring-[#006c75]" />
+      </div>
+      <div class="flex gap-2 overflow-x-auto no-scrollbar">
+        <button onclick="setRepFilter('all',this)"
+          class="rep-filter-btn shrink-0 px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#006c75] text-white">All</button>
+        <button onclick="setRepFilter('income',this)"
+          class="rep-filter-btn shrink-0 px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#006c75]/10 text-[#006c75]">Income</button>
+        <button onclick="setRepFilter('expense',this)"
+          class="rep-filter-btn shrink-0 px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#006c75]/10 text-[#006c75]">Expense</button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto pb-24 px-4 space-y-4">
+      <div class="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+        <div class="shrink-0 w-36 p-4 bg-[#006c75] text-white rounded-md shadow-md">
+          <p class="text-[10px] opacity-80 mb-1">Total Income</p>
+          <p class="text-lg font-bold" id="rep-income">$0</p>
+          <p class="text-[9px] mt-1 font-medium opacity-80" id="rep-inc-cmp">vs prev</p>
+        </div>
+        <div class="shrink-0 w-36 p-4 bg-white dark:bg-slate-800 rounded-md border border-[#006c75]/5 shadow-sm">
+          <p class="text-[10px] text-slate-500 mb-1">Total Expense</p>
+          <p class="text-lg font-bold" id="rep-expense">$0</p>
+          <p class="text-[9px] mt-1 font-medium text-slate-400" id="rep-exp-cmp">vs prev</p>
+        </div>
+        <div class="shrink-0 w-36 p-4 bg-white dark:bg-slate-800 rounded-md border border-[#006c75]/5 shadow-sm">
+          <p class="text-[10px] text-slate-500 mb-1">Net Savings</p>
+          <p class="text-lg font-bold text-emerald-600" id="rep-savings">$0</p>
+          <p class="text-[9px] mt-1 font-medium text-slate-400" id="rep-sav-cmp">vs prev</p>
+        </div>
+      </div>
+
+      <!-- Comparison Chart -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-lg border border-[#006c75]/5 shadow-sm">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="font-bold text-sm">Comparison (Current vs Prev Expense)</h3>
+          <div class="flex gap-3">
+            <div class="flex items-center gap-1"><span
+                class="w-2 h-2 rounded-lg bg-[#006c75] inline-block"></span><span
+                class="text-[10px] text-slate-500">Current</span></div>
+            <div class="flex items-center gap-1"><span
+                class="w-2 h-2 rounded-lg bg-slate-200 dark:bg-slate-600 inline-block"></span><span
+                class="text-[10px] text-slate-500">Previous</span></div>
+          </div>
+        </div>
+        <svg id="rep-chart" viewBox="0 0 360 120" class="w-full h-36" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="lg2" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#006c75" stop-opacity="0.2" />
+              <stop offset="100%" stop-color="#006c75" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <path id="rep-area" fill="url(#lg2)" />
+          <path id="rep-line-income" fill="none" stroke="#006c75" stroke-width="2.5" stroke-linecap="round" />
+          <path id="rep-line-expense" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5 3"
+            stroke-linecap="round" />
+        </svg>
+        <div id="rep-labels" class="flex justify-between text-[9px] text-slate-400 font-semibold uppercase mt-1"></div>
+      </div>
+
+      <!-- Top Spending -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-bold text-sm">Top Spending</h3>
+        </div>
+        <div id="rep-top" class="space-y-2"></div>
+      </div>
+
+      <!-- Custom Charts Section -->
+      <div class="mt-8">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-sm">Custom Charts</h3>
+          <button onclick="openCustomChartModal()" class="flex items-center gap-1 text-xs text-[#006c75] font-bold bg-[#006c75]/10 px-2 py-1 rounded-md mb-2">
+            <span class="mat text-[14px]">add</span> Add Chart
+          </button>
+        </div>
+        <div id="rep-custom-charts" class="space-y-6"></div>
+      </div>
+    </div>
+    <nav
+      class="fixed bottom-0 inset-x-0 max-w-md mx-auto flex items-center justify-around bg-white/90 dark:bg-[#0f2223]/90 backdrop-blur-md px-4 pb-5 pt-3 border-t border-[#006c75]/10 z-10">
+      <button onclick="showScreen('screen-dashboard')" class="flex flex-col items-center gap-0.5 text-slate-400"><span
+          class="mat text-2xl">dashboard</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Home</p>
+      </button>
+      <button onclick="showScreen('screen-transactions')"
+        class="flex flex-col items-center gap-0.5 text-slate-400"><span class="mat text-2xl">receipt_long</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Transactions</p>
+      </button>
+      <button onclick="showScreen('screen-budgets')" class="flex flex-col items-center gap-0.5 text-slate-400"><span
+          class="mat text-2xl">account_balance_wallet</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Budgets</p>
+      </button>
+      <button onclick="showScreen('screen-reports')" class="flex flex-col items-center gap-0.5 text-[#006c75]"><span
+          class="mat fill text-2xl">analytics</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Reports</p>
+      </button>
+      <button onclick="showScreen('screen-settings')" class="flex flex-col items-center gap-0.5 text-slate-400"><span
+          class="mat text-2xl">settings</span>
+        <p class="text-[9px] font-bold uppercase tracking-wider">Settings</p>
+      </button>
+    </nav>
+  </div>
+
+  <!-- =================== SETTINGS =================== -->
+  <div id="screen-settings" class="screen bg-[#f5f8f8] dark:bg-[#0f2223]">
+    <header
+      class="flex items-center p-4 justify-between sticky top-0 bg-white/80 dark:bg-[#0f2223]/80 backdrop-blur-md z-10 border-b border-[#006c75]/5">
+      <button onclick="showScreen('screen-dashboard')"
+        class="flex size-10 items-center justify-center rounded-lg bg-[#006c75]/10 text-[#006c75]"><span
+          class="mat">arrow_back</span></button>
+      <h1 class="text-base font-bold">Settings</h1>
+      <div class="w-10"></div>
+    </header>
+    <div class="flex-1 overflow-y-auto pb-24">
+      <div class="px-4 py-4">
+        <div class="flex flex-col items-center gap-3 bg-[#006c75]/5 dark:bg-[#006c75]/10 p-6 rounded-lg mb-6">
+          <div class="w-20 h-20 rounded-lg bg-[#006c75] flex items-center justify-center shadow-xl">
+            <span class="mat text-white text-4xl">person</span>
+          </div>
+          <div class="text-center">
+            <h2 class="text-lg font-bold">EQUITY User</h2>
+            <p class="text-slate-500 text-xs">user@equity.finance</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-1">Preferences</p>
+          <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm">
+            <div class="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-md bg-[#006c75]/10 text-[#006c75] flex items-center justify-center"><span
+                    class="mat text-lg">dark_mode</span></div><span class="font-medium text-sm">Dark Mode</span>
+              </div>
+              <label
+                class="relative flex h-7 w-12 cursor-pointer items-center rounded-lg bg-slate-200 dark:bg-[#006c75] p-1 transition-colors">
+                <input type="checkbox" id="dark-toggle" class="peer invisible absolute"
+                  onchange="toggleDarkMode(this.checked)" />
+                <div class="h-5 w-5 rounded-lg bg-white shadow transition-transform peer-checked:translate-x-5"></div>
+              </label>
+            </div>
+            <div class="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-md bg-[#006c75]/10 text-[#006c75] flex items-center justify-center"><span
+                    class="mat text-lg">payments</span></div><span class="font-medium text-sm">Currency</span>
+              </div>
+              <select id="currency-select" onchange="saveCurrency(this.value)"
+                class="bg-transparent text-slate-500 text-sm font-semibold border-none outline-none">
+                <option value="$">USD ($)</option>
+                <option value="€">EUR (€)</option>
+                <option value="£">GBP (£)</option>
+                <option value="¥">JPY (¥)</option>
+                <option value="₹">INR (₹)</option>
+                <option value="Rs">PKR (Rs)</option>
+              </select>
+            </div>
+            <div class="flex items-center justify-between p-4">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-md bg-[#006c75]/10 text-[#006c75] flex items-center justify-center"><span
+                    class="mat text-lg">notifications</span></div><span class="font-medium text-sm">Notifications</span>
+              </div>
+              <span class="mat text-slate-400">chevron_right</span>
+            </div>
+          </div>
+
+          </button>
+        </div>
+
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-1 mt-6">Data & Advanced</p>
+        <div class="bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm">
+          <button onclick="openCategoryManager()"
+            class="w-full flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-md bg-[#006c75]/10 text-[#006c75] flex items-center justify-center"><span
+                  class="mat text-lg">category</span></div><span class="font-medium text-sm">Manage Categories</span>
+            </div>
+            <span class="mat text-slate-400">chevron_right</span>
+          </button>
+          <button onclick="document.getElementById('excel-upload').click()"
+            class="w-full flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-md bg-[#006c75]/10 text-[#006c75] flex items-center justify-center"><span
+                  class="mat text-lg">download</span></div><span class="font-medium text-sm">Import Excel</span>
+            </div>
+            <span class="mat text-slate-400">chevron_right</span>
+          </button>
+          <input type="file" id="excel-upload" accept=".xlsx,.xls" class="hidden" onchange="importExcel(event)" />
+
+          <button onclick="exportExcel()"
+            class="w-full flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-md bg-[#006c75]/10 text-[#006c75] flex items-center justify-center"><span
+                  class="mat text-lg">grid_on</span></div><span class="font-medium text-sm">Export Excel (.xlsx)</span>
+            </div>
+            <span class="mat text-slate-400">chevron_right</span>
+          </button>
+          
+          <button onclick="exportCSV()"
+            class="w-full flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-md bg-[#006c75]/10 text-[#006c75] flex items-center justify-center"><span
+                  class="mat text-lg">list_alt</span></div><span class="font-medium text-sm">Export CSV (.csv)</span>
+            </div>
+            <span class="mat text-slate-400">chevron_right</span>
+          </button>
+
+          <button onclick="exportPDF()" class="w-full flex items-center justify-between p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-md bg-[#006c75]/10 text-[#006c75] flex items-center justify-center"><span
+                  class="mat text-lg">picture_as_pdf</span></div><span class="font-medium text-sm">Export PDF
+                Report</span>
+            </div>
+            <span class="mat text-slate-400">chevron_right</span>
+          </button>
+        </div>
+
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-1">Danger Zone</p>
+        <button onclick="clearAllData()"
+          class="w-full py-3 text-red-500 font-bold border-2 border-red-500/20 rounded-md hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-sm">Clear
+          All Data</button>
+      </div>
+    </div>
+  </div>
+  <nav
+    class="fixed bottom-0 inset-x-0 max-w-md mx-auto flex items-center justify-around bg-white/90 dark:bg-[#0f2223]/90 backdrop-blur-md px-4 pb-5 pt-3 border-t border-[#006c75]/10 z-10">
+    <button onclick="showScreen('screen-dashboard')" class="flex flex-col items-center gap-0.5 text-slate-400"><span
+        class="mat text-2xl">dashboard</span>
+      <p class="text-[9px] font-bold uppercase tracking-wider">Home</p>
+    </button>
+    <button onclick="showScreen('screen-transactions')" class="flex flex-col items-center gap-0.5 text-slate-400"><span
+        class="mat text-2xl">receipt_long</span>
+      <p class="text-[9px] font-bold uppercase tracking-wider">Transactions</p>
+    </button>
+    <button onclick="showScreen('screen-budgets')" class="flex flex-col items-center gap-0.5 text-slate-400"><span
+        class="mat text-2xl">account_balance_wallet</span>
+      <p class="text-[9px] font-bold uppercase tracking-wider">Budgets</p>
+    </button>
+    <button onclick="showScreen('screen-reports')" class="flex flex-col items-center gap-0.5 text-slate-400"><span
+        class="mat text-2xl">analytics</span>
+      <p class="text-[9px] font-bold uppercase tracking-wider">Reports</p>
+    </button>
+    <button onclick="showScreen('screen-settings')" class="flex flex-col items-center gap-0.5 text-[#006c75]"><span
+        class="mat fill text-2xl">settings</span>
+      <p class="text-[9px] font-bold uppercase tracking-wider">Settings</p>
+    </button>
+  </nav>
+  </div>
+  <!-- =================== ADD/EDIT MODAL =================== -->
+  <div id="modal-add" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeAddModal()"></div>
+    <div
+      class="modal-enter relative w-full max-w-md bg-white dark:bg-[#0f2223] rounded-t-lg shadow-2xl overflow-hidden">
+      <div class="flex items-center justify-between p-5 pb-3">
+        <button onclick="closeAddModal()"
+          class="flex size-9 items-center justify-center rounded-lg bg-[#006c75]/10 text-[#006c75]"><span
+            class="mat text-lg">close</span></button>
+        <h2 class="font-bold text-base" id="modal-title">Add Transaction</h2>
+        <div class="w-9"></div>
+      </div>
+      <div class="px-5 pb-6 space-y-4 overflow-y-auto max-h-[85vh]">
+        <!-- Amount -->
+        <div class="text-center py-2">
+          <p class="text-xs font-semibold text-slate-500 mb-1">Amount</p>
+          <div class="flex items-center justify-center gap-1">
+            <span class="text-2xl font-bold text-[#006c75]" id="modal-currency-sym">$</span>
+            <input type="number" id="tx-amount" placeholder="0.00" min="0" step="0.01"
+              class="text-4xl font-bold bg-transparent border-none outline-none w-40 text-center text-slate-900 dark:text-slate-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+          </div>
+        </div>
+        <!-- Type Toggle -->
+        <div class="flex h-11 items-center rounded-lg bg-[#006c75]/8 p-1 gap-1">
+          <button onclick="setTxType('expense',this)" id="type-expense"
+            class="type-btn flex-1 h-full rounded-lg text-sm font-semibold bg-white dark:bg-[#006c75] shadow-sm text-[#006c75] dark:text-white transition-all">Expense</button>
+          <button onclick="setTxType('income',this)" id="type-income"
+            class="type-btn flex-1 h-full rounded-lg text-sm font-semibold text-slate-500 transition-all">Income</button>
+        </div>
+        <!-- Title -->
+        <div>
+          <label class="text-xs font-bold text-slate-600 dark:text-slate-400 ml-1 block mb-1">Title</label>
+          <input type="text" id="tx-title" placeholder="e.g. Coffee, Salary…"
+            class="w-full h-12 px-4 rounded-md border-none bg-[#006c75]/5 dark:bg-slate-800 focus:ring-2 focus:ring-[#006c75] text-sm" />
+        </div>
+        <!-- Categories -->
+        <div>
+          <label class="text-xs font-bold text-slate-600 dark:text-slate-400 ml-1 block mb-2">Category</label>
+          <div class="flex gap-3 overflow-x-auto pb-1 no-scrollbar" id="cat-picker"></div>
+        </div>
+        <!-- Date & Time -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-600 dark:text-slate-400 ml-1 block mb-1">Date</label>
+            <input type="date" id="tx-date"
+              class="w-full h-12 px-4 rounded-md border-none bg-[#006c75]/5 dark:bg-slate-800 focus:ring-2 focus:ring-[#006c75] text-sm" />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-600 dark:text-slate-400 ml-1 block mb-1">Time</label>
+            <input type="time" id="tx-time"
+              class="w-full h-12 px-4 rounded-md border-none bg-[#006c75]/5 dark:bg-slate-800 focus:ring-2 focus:ring-[#006c75] text-sm" />
+          </div>
+        </div>
+        <!-- Note -->
+        <div>
+          <label class="text-xs font-bold text-slate-600 dark:text-slate-400 ml-1 block mb-1">Note</label>
+          <textarea id="tx-note" rows="2" placeholder="Optional note…"
+            class="w-full px-4 py-3 rounded-md border-none bg-[#006c75]/5 dark:bg-slate-800 focus:ring-2 focus:ring-[#006c75] text-sm resize-none"></textarea>
+        </div>
+        <!-- Recurring -->
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" id="tx-recurring" class="w-4 h-4 accent-[#006c75]" />
+          <span class="text-sm font-medium">Recurring (monthly)</span>
+        </label>
+        <!-- Save -->
+        <button onclick="saveTransaction()"
+          class="w-full bg-[#006c75] text-white h-14 rounded-lg font-bold text-base shadow-xl shadow-[#006c75]/30 flex items-center justify-center active:scale-95 transition-transform mt-2">
+          <span id="save-btn-text">Save Transaction</span>
+        </button>
+        <input type="hidden" id="tx-edit-id" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="modal-confirm" class="fixed inset-0 z-[60] bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-xl p-6 shadow-2xl relative text-center">
+      <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="mat text-3xl">warning</span>
+      </div>
+      <h3 class="text-xl font-bold mb-2">Are you sure?</h3>
+      <p id="confirm-msg-text" class="text-sm text-slate-500 dark:text-slate-400 mb-6">This action cannot be undone.</p>
+      <div class="flex gap-4">
+        <button onclick="hideConfirm()" class="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 h-12 rounded-lg font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+        <button onclick="executeConfirm()" class="flex-1 bg-red-500 text-white h-12 rounded-lg font-bold hover:bg-red-600 shadow-lg shadow-red-500/20 transition-colors">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== BUDGET MODAL =================== -->
+  <div id="modal-budget" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeBudgetModal()"></div>
+    <div
+      class="modal-enter relative w-full max-w-md bg-white dark:bg-[#0f2223] rounded-t-lg shadow-2xl p-5 pb-8 space-y-4">
+      <div class="flex items-center justify-between mb-1">
+        <button onclick="closeBudgetModal()"
+          class="flex size-9 items-center justify-center rounded-lg bg-[#006c75]/10 text-[#006c75]"><span
+            class="mat text-lg">close</span></button>
+        <h2 class="font-bold text-base">Add Budget</h2>
+        <div class="w-9"></div>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 dark:text-slate-400 ml-1 block mb-1">Category</label>
+        <select id="budget-cat"
+          class="w-full h-12 px-4 rounded-md border-none bg-[#006c75]/5 dark:bg-slate-800 focus:ring-2 focus:ring-[#006c75] text-sm">
+          <option value="food">Food & Dining</option>
+          <option value="transport">Transport</option>
+          <option value="shopping">Shopping</option>
+          <option value="rent">Rent & Utilities</option>
+          <option value="entertainment">Entertainment</option>
+          <option value="health">Health</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 dark:text-slate-400 ml-1 block mb-1">Monthly Budget Limit</label>
+        <input type="number" id="budget-limit" placeholder="e.g. 500" min="1"
+          class="w-full h-12 px-4 rounded-md border-none bg-[#006c75]/5 dark:bg-slate-800 focus:ring-2 focus:ring-[#006c75] text-sm" />
+      </div>
+      <button onclick="saveBudget()"
+        class="w-full bg-[#006c75] text-white h-14 rounded-lg font-bold shadow-xl shadow-[#006c75]/30 active:scale-95 transition-transform"
+        id="budget-save-btn">Save Budget</button>
+      <input type="hidden" id="budget-edit-id" />
+    </div>
+  </div>
+
+  <!-- =================== AI INSIGHTS MODAL =================== -->
+  <div id="modal-ai-insights" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeAIInsights()"></div>
+    <div
+      class="modal-enter relative w-full max-w-md bg-white dark:bg-[#0f2223] rounded-t-lg shadow-2xl overflow-hidden flex flex-col"
+      style="height: 85vh;">
+      <div
+        class="flex items-center justify-between p-5 pb-3 border-b border-indigo-100 dark:border-indigo-900/30 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
+        <button onclick="closeAIInsights()"
+          class="flex size-9 items-center justify-center rounded-lg bg-white/50 text-indigo-600 dark:text-indigo-400"><span
+            class="mat text-lg">close</span></button>
+        <div class="flex items-center gap-1"><span class="mat text-indigo-500 text-lg">auto_awesome</span>
+          <h2 class="font-bold text-base text-indigo-900 dark:text-indigo-100">AI Financial Insights</h2>
+        </div>
+        <div class="w-9"></div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-4 space-y-4" id="ai-insights-content">
+        <!-- Generated insights go here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== CATEGORY MODAL =================== -->
+  <div id="modal-category" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeCategoryManager()"></div>
+    <div
+      class="modal-enter relative w-full max-w-md bg-white dark:bg-[#0f2223] rounded-t-lg shadow-2xl overflow-hidden flex flex-col"
+      style="height: 85vh;">
+      <div class="flex items-center justify-between p-5 pb-3 border-b border-[#006c75]/5">
+        <button onclick="closeCategoryManager()"
+          class="flex size-9 items-center justify-center rounded-lg bg-[#006c75]/10 text-[#006c75]"><span
+            class="mat text-lg">close</span></button>
+        <h2 class="font-bold text-base">Categories</h2>
+        <div class="w-9"></div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-4 space-y-6">
+        <!-- Add New Category Form -->
+        <div class="bg-[#006c75]/5 dark:bg-[#006c75]/10 p-4 rounded-lg">
+          <h3 class="text-xs font-bold uppercase tracking-widest text-[#006c75] mb-3">Add New Category</h3>
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <input type="text" id="new-cat-id" placeholder="ID (e.g. coffee)"
+              class="w-full h-10 px-3 rounded-lg border-none bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-[#006c75]" />
+            <select id="new-cat-type"
+              class="w-full h-10 px-3 rounded-lg border-none bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-[#006c75]">
+              <option value="expense">Expense</option>
+              <option value="income">Income</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <input type="text" id="new-cat-icon" placeholder="Icon (e.g. fastfood)"
+              class="w-full h-10 px-3 rounded-lg border-none bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-[#006c75]" />
+            <input type="color" id="new-cat-hex" value="#006c75"
+              class="w-full h-10 rounded-lg border-none bg-white dark:bg-slate-800 p-1 cursor-pointer" />
+          </div>
+          <button onclick="saveNewCategory()"
+            class="w-full bg-[#006c75] text-white h-10 rounded-md font-bold text-sm">Save Category</button>
+        </div>
+
+        <!-- Existing Categories List -->
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Your Categories</h3>
+          <div id="cat-manager-list" class="space-y-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== AI INSIGHTS MODAL =================== -->
+  <div id="modal-ai-insights" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeAIInsights()"></div>
+    <div
+      class="modal-enter relative w-full max-w-md bg-white dark:bg-[#0f2223] rounded-t-lg shadow-2xl overflow-hidden flex flex-col"
+      style="height: 85vh;">
+      <div
+        class="flex items-center justify-between p-5 pb-3 border-b border-indigo-100 dark:border-indigo-900/30 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
+        <button onclick="closeAIInsights()"
+          class="flex size-9 items-center justify-center rounded-lg bg-white/50 text-indigo-600 dark:text-indigo-400"><span
+            class="mat text-lg">close</span></button>
+        <div class="flex items-center gap-1"><span class="mat text-indigo-500 text-lg">auto_awesome</span>
+          <h2 class="font-bold text-base text-indigo-900 dark:text-indigo-100">AI Financial Insights</h2>
+        </div>
+        <div class="w-9"></div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-4 space-y-4" id="ai-insights-content">
+        <!-- Generated insights go here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== CUSTOM CHART MODAL =================== -->
+  <div id="modal-custom-chart" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeCustomChartModal()"></div>
+    <div class="modal-enter relative w-full max-w-md bg-white dark:bg-[#0f2223] rounded-t-lg shadow-2xl p-5 pb-8 space-y-4">
+      <div class="flex items-center justify-between mb-1">
+        <button onclick="closeCustomChartModal()" class="flex size-9 items-center justify-center rounded-lg bg-[#006c75]/10 text-[#006c75]"><span class="mat text-lg">close</span></button>
+        <h2 class="font-bold text-base">Build Custom Chart</h2>
+        <div class="w-9"></div>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 dark:text-slate-400 ml-1 block mb-1">Chart Title</label>
+        <input type="text" id="cc-title" class="w-full h-12 px-4 rounded-md border-none bg-[#006c75]/5 dark:bg-slate-800 focus:ring-2 focus:ring-[#006c75] text-sm" placeholder="e.g. My Expense Trend" />
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 dark:text-slate-400 ml-1 block mb-1">Chart Type</label>
+        <select id="cc-type" class="w-full h-12 px-4 rounded-md border-none bg-[#006c75]/5 dark:bg-slate-800 focus:ring-2 focus:ring-[#006c75] text-sm">
+          <option value="line">Line Chart</option>
+          <option value="spline">Spline Chart (Smooth Mode)</option>
+          <option value="column">Column Chart (Vertical Bar)</option>
+          <option value="bar">Bar Chart (Horizontal)</option>
+          <option value="pie">Pie Chart</option>
+          <option value="doughnut">Donut Chart</option>
+          <option value="combo">Combo Chart (Bar + Line)</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600 dark:text-slate-400 ml-1 block mb-1">Data Metric</label>
+        <select id="cc-metric" class="w-full h-12 px-4 rounded-md border-none bg-[#006c75]/5 dark:bg-slate-800 focus:ring-2 focus:ring-[#006c75] text-sm">
+          <option value="expense_by_cat">Expense by Category</option>
+          <option value="income_vs_expense">Income vs Expense Trend</option>
+          <option value="daily_expense">Daily Expense Trend</option>
+          <option value="income_by_cat">Income by Category</option>
+        </select>
+      </div>
+      <button onclick="saveCustomChart()" class="w-full bg-[#006c75] text-white h-14 rounded-lg font-bold shadow-xl shadow-[#006c75]/30">Create Chart</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // DATA LAYER - localStorage
+    // ============================================================
+    const DEFAULT_CATS = {
+      food: { icon: 'restaurant', color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600', hex: '#f97316', type: 'expense' },
+      transport: { icon: 'directions_car', color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600', hex: '#a855f7', type: 'expense' },
+      shopping: { icon: 'shopping_bag', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600', hex: '#3b82f6', type: 'expense' },
+      rent: { icon: 'home', color: 'bg-teal-100 dark:bg-teal-900/30 text-teal-600', hex: '#14b8a6', type: 'expense' },
+      entertainment: { icon: 'movie', color: 'bg-rose-100 dark:bg-rose-900/30 text-rose-600', hex: '#f43f5e', type: 'expense' },
+      health: { icon: 'favorite', color: 'bg-red-100 dark:bg-red-900/30 text-red-600', hex: '#ef4444', type: 'expense' },
+      salary: { icon: 'payments', color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600', hex: '#10b981', type: 'income' },
+      freelance: { icon: 'work', color: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600', hex: '#06b6d4', type: 'income' },
+      investment: { icon: 'trending_up', color: 'bg-green-100 dark:bg-green-900/30 text-green-600', hex: '#22c55e', type: 'income' },
+      other: { icon: 'category', color: 'bg-slate-100 dark:bg-slate-700 text-slate-600', hex: '#94a3b8', type: 'expense' }
+    };
+
+    let CATS = {};
+    let INCOME_CATS = [];
+    let EXP_CATS = [];
+
+    let txEditId = null, dbPeriod = 'weekly', txFilter = 'all', curSym = '$';
+    let transactions = [], budgets = [], settings = {}, customCharts = [];
+
+    function loadData() {
+      transactions = JSON.parse(localStorage.getItem('equity_tx') || '[]');
+      budgets = JSON.parse(localStorage.getItem('equity_bud') || '[]');
+      settings = JSON.parse(localStorage.getItem('equity_settings') || '{}');
+      CATS = JSON.parse(localStorage.getItem('equity_cats') || JSON.stringify(DEFAULT_CATS));
+      customCharts = JSON.parse(localStorage.getItem('equity_charts') || '[]');
+
+      // Re-build type arrays
+      INCOME_CATS = Object.keys(CATS).filter(k => CATS[k].type === 'income');
+      EXP_CATS = Object.keys(CATS).filter(k => CATS[k].type === 'expense');
+      curSym = settings.currency || '$';
+    }
+    function saveData() {
+      localStorage.setItem('equity_tx', JSON.stringify(transactions));
+      localStorage.setItem('equity_bud', JSON.stringify(budgets));
+      localStorage.setItem('equity_settings', JSON.stringify(settings));
+      localStorage.setItem('equity_cats', JSON.stringify(CATS));
+      localStorage.setItem('equity_charts', JSON.stringify(customCharts));
+    }
+
+    // ============================================================
+    // SCREENS
+    // ============================================================
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const el = document.getElementById(id);
+      if (el) el.classList.add('active');
+      window.scrollTo(0, 0);
+      if (id === 'screen-dashboard') refreshDashboard();
+      if (id === 'screen-transactions') renderTransactions();
+      if (id === 'screen-budgets') renderBudgets();
+      if (id === 'screen-reports') renderReports();
+      if (id === 'screen-settings') initSettings();
+    }
+
+    // ============================================================
+    // UTILS
+    // ============================================================
+    function fmt(n) { return curSym + Math.abs(n).toFixed(2); }
+    function dateStr(dt) { const d = new Date(dt); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+    function today() { return new Date().toISOString().slice(0, 10); }
+    function todayTime() { return new Date().toTimeString().slice(0, 5); }
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+    function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+
+    function catIcon(cat, sz = 'text-xl') {
+      const c = CATS[cat] || CATS.other;
+      return `<div class="flex items-center justify-center size-12 rounded-lg ${c.color}"><span class="mat ${sz}">${c.icon}</span></div>`;
+    }
+
+    let confirmCallback = null;
+    function showConfirm(msg, callback) {
+      confirmCallback = callback;
+      document.getElementById('confirm-msg-text').textContent = msg;
+      document.getElementById('modal-confirm').classList.remove('hidden');
+      document.body.classList.add('no-scroll');
+    }
+    function hideConfirm() {
+      document.getElementById('modal-confirm').classList.add('hidden');
+      document.body.classList.remove('no-scroll');
+      confirmCallback = null;
+    }
+    function executeConfirm() {
+      if (confirmCallback) { confirmCallback(); hideConfirm(); }
+    }
+
+    // ============================================================
+    // DASHBOARD
+    // ============================================================
+    function refreshDashboard() {
+      loadData();
+      const dbMonthInput = document.getElementById('db-month-filter');
+      if (!dbMonthInput.value) dbMonthInput.value = today().slice(0, 7);
+      const now = new Date(dbMonthInput.value + '-01T00:00:00'); // start of selected month
+
+      // Filter base dataset by the selected month first
+      const selectedMonthStr = dbMonthInput.value;
+      let filtered = transactions.filter(x => x.date.startsWith(selectedMonthStr));
+      let trendLabel = 'This month';
+
+      if (dbPeriod === 'daily') {
+        const t = new Date().toISOString().slice(0, 10); // current actual day, but if not in month, maybe show none or fallback to first day of selected month?
+        // Let's filter to the specific day if it's the current month, otherwise show day 1
+        const td = today();
+        const dayToUse = td.startsWith(selectedMonthStr) ? td : selectedMonthStr + '-01';
+        filtered = transactions.filter(x => x.date === dayToUse);
+        trendLabel = 'Daily';
+      } else if (dbPeriod === 'weekly') {
+        // get a 7 day window from the selected month (e.g. first 7 days, or current week if current month)
+        const td = today();
+        const wE = td.startsWith(selectedMonthStr) ? new Date() : new Date(selectedMonthStr + '-07T23:59:59');
+        const wS = new Date(wE); wS.setDate(wE.getDate() - 6);
+        filtered = transactions.filter(x => { const d = new Date(x.date); return d >= wS && d <= wE; });
+        trendLabel = 'Weekly';
+      }
+
+      const income = filtered.filter(x => x.type === 'income').reduce((a, b) => a + b.amount, 0);
+      const expense = filtered.filter(x => x.type === 'expense').reduce((a, b) => a + b.amount, 0);
+      const balance = income - expense;
+
+      document.getElementById('db-balance').textContent = (balance >= 0 ? '+' : '-') + fmt(Math.abs(balance));
+      document.getElementById('db-income').textContent = fmt(income);
+      document.getElementById('db-expense').textContent = fmt(expense);
+      document.getElementById('db-trend-val').textContent = fmt(expense);
+      const pct = income > 0 ? ((expense / income) * 100).toFixed(0) + '%' : '0%';
+      document.getElementById('db-trend-pct').textContent = pct + ' of income';
+      document.getElementById('db-trend-label').textContent = trendLabel;
+
+      drawLineChart(filtered, dbPeriod, selectedMonthStr);
+      drawDonut(filtered);
+
+      const recent = [...transactions].filter(x => x.date.startsWith(selectedMonthStr)).sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time)).slice(0, 5);
+      const container = document.getElementById('db-recent');
+      const empty = document.getElementById('db-empty');
+      if (recent.length === 0) { container.innerHTML = ''; empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+      container.innerHTML = recent.map(tx => `
+    <div class="flex items-center gap-3 bg-white dark:bg-slate-800/40 p-3 rounded-md border border-[#006c75]/5 cursor-pointer" onclick="editTransaction('${tx.id}')">
+      ${catIcon(tx.category, 'text-lg')}
+      <div class="flex-1 min-w-0"><p class="text-sm font-bold truncate">${tx.title}</p><p class="text-[10px] text-slate-500">${dateStr(tx.date)}</p></div>
+      <p class="text-sm font-bold ${tx.type === 'income' ? 'text-emerald-600' : 'text-slate-900 dark:text-slate-100'}">${tx.type === 'income' ? '+' : '-'}${fmt(tx.amount)}</p>
+    </div>`).join('');
+    }
+
+    function setDBPeriod(p, btn) {
+      dbPeriod = p;
+      document.querySelectorAll('.period-btn').forEach(b => {
+        b.classList.remove('bg-white', 'dark:bg-[#006c75]', 'shadow-sm', 'text-[#006c75]', 'dark:text-white');
+        b.classList.add('text-slate-500', 'dark:text-slate-400');
+      });
+      btn.classList.add('bg-white', 'dark:bg-[#006c75]', 'shadow-sm', 'text-[#006c75]', 'dark:text-white');
+      btn.classList.remove('text-slate-500', 'dark:text-slate-400');
+      refreshDashboard();
+    }
+
+    function drawLineChart(txns, period, monthStr) {
+      const days = 7, data = [];
+      // Determine anchor date for chart back-look
+      const td = today();
+      let anchor = td.startsWith(monthStr) ? new Date() : (period === 'weekly' ? new Date(monthStr + '-07T23:59:59') : new Date(monthStr + '-28T23:59:59'));
+
+      if (period === 'monthly') {
+        // plot 4 weeks if monthly
+        for (let i = 3; i >= 0; i--) {
+          const wS = new Date(monthStr + '-01T00:00:00'); wS.setDate(wS.getDate() + i * 7);
+          const wE = new Date(wS); wE.setDate(wS.getDate() + 6);
+          const sum = txns.filter(x => { const d = new Date(x.date); return d >= wS && d <= wE && x.type === 'expense'; }).reduce((a, b) => a + b.amount, 0);
+          data.push({ label: 'W' + (i + 1), val: sum });
+        }
+        data.reverse(); // W1 to W4
+      } else {
+        for (let i = days - 1; i >= 0; i--) {
+          const d = new Date(anchor); d.setDate(d.getDate() - i);
+          const ds = d.toISOString().slice(0, 10);
+          const sum = txns.filter(x => x.date === ds && x.type === 'expense').reduce((a, b) => a + b.amount, 0);
+          data.push({ label: d.toLocaleDateString('en-US', { weekday: 'short' }), val: sum });
+        }
+      }
+
+      const max = Math.max(...data.map(d => d.val), 1);
+      const W = 360, H = 100, pts = data.map((d, i) => [i * (W / (data.length - 1)), H - 10 - (d.val / max) * (H - 20)]);
+      const line = pts.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(' ');
+      const area = line + ` L${pts[pts.length - 1][0]},${H} L0,${H} Z`;
+      document.getElementById('line-path').setAttribute('d', line);
+      document.getElementById('line-area').setAttribute('d', area);
+      document.getElementById('line-labels').innerHTML = data.map(d => `<span>${d.label}</span>`).join('');
+    }
+
+    function drawDonut(txns) {
+      const exp = txns.filter(x => x.type === 'expense');
+      const totExp = exp.reduce((a, b) => a + b.amount, 0);
+      const bycat = {};
+      exp.forEach(x => { bycat[x.category] = (bycat[x.category] || 0) + x.amount; });
+      const sorted = Object.entries(bycat).sort((a, b) => b[1] - a[1]).slice(0, 3);
+      const colors = ['#006c75', '#00a3af', '#cbd5e1'];
+      let offset = 0;
+      ['donut-arc1', 'donut-arc2', 'donut-arc3'].forEach((id, i) => {
+        const arc = document.getElementById(id);
+        if (sorted[i] && totExp > 0) {
+          const pct = (sorted[i][1] / totExp) * 100;
+          arc.setAttribute('stroke-dasharray', `${pct} 100`);
+          arc.setAttribute('stroke-dashoffset', -offset);
+          arc.setAttribute('stroke', CATS[sorted[i][0]]?.hex || colors[i]);
+          offset += pct;
+        } else {
+          arc.setAttribute('stroke-dasharray', '0 100');
+        }
+      });
+      document.getElementById('donut-center').textContent = fmt(totExp);
+      document.getElementById('donut-legend').innerHTML = sorted.map((s, i) => `
+    <div class="flex items-center justify-between text-xs">
+      <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-lg" style="background:${CATS[s[0]]?.hex || colors[i]}"></div><span class="text-slate-600 dark:text-slate-400 font-medium capitalize">${s[0]}</span></div>
+      <span class="font-bold">${totExp > 0 ? ((s[1] / totExp) * 100).toFixed(0) : '0'}%</span>
+    </div>`).join('') || '<p class="text-xs text-slate-400">No expenses yet.</p>';
+    }
+
+    // ============================================================
+    // TRANSACTIONS
+    // ============================================================
+    function renderTransactions() {
+      loadData();
+      const search = (document.getElementById('tx-search')?.value || '').toLowerCase();
+      let list = [...transactions].sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
+
+      if (txFilter !== 'all' && txFilter !== 'custom') {
+        list = list.filter(x => x.type === txFilter || x.category === txFilter);
+      }
+
+      if (txFilter === 'custom') {
+        const ds = document.getElementById('tx-date-start').value;
+        const de = document.getElementById('tx-date-end').value;
+        if (ds) list = list.filter(x => x.date >= ds);
+        if (de) list = list.filter(x => x.date <= de);
+      }
+
+      if (search) list = list.filter(x => x.title.toLowerCase().includes(search) || x.category.toLowerCase().includes(search));
+
+      const grouped = {};
+      list.forEach(tx => {
+        const k = dateStr(tx.date);
+        if (!grouped[k]) grouped[k] = [];
+        grouped[k].push(tx);
+      });
+
+      const container = document.getElementById('tx-list');
+      if (list.length === 0) { container.innerHTML = '<div class="text-center py-12 text-slate-400 text-sm">No transactions found.</div>'; return; }
+
+      container.innerHTML = Object.entries(grouped).map(([date, txs]) => `
+    <div class="mt-4">
+      <h3 class="text-[10px] font-bold text-[#006c75]/60 uppercase tracking-widest mb-2">${date}</h3>
+      <div class="space-y-2">${txs.map(tx => `
+        <div class="flex items-center justify-between p-4 bg-white dark:bg-slate-800/50 rounded-md shadow-sm border border-[#006c75]/5">
+          <div class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" onclick="editTransaction('${tx.id}')">
+            ${catIcon(tx.category)}
+            <div class="min-w-0"><p class="font-bold text-sm truncate">${tx.title}</p><p class="text-[10px] text-slate-500 capitalize">${tx.category}${tx.recurring ? ' · 🔄' : ''}</p></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <p class="font-bold text-sm ${tx.type === 'income' ? 'text-emerald-600' : 'text-slate-900 dark:text-slate-100'}">${tx.type === 'income' ? '+' : '-'}${fmt(tx.amount)}</p>
+            <button onclick="deleteTransaction('${tx.id}')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 transition-colors"><span class="mat text-base">delete</span></button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+    }
+
+    function setTxFilter(f, btn) {
+      txFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('bg-[#006c75]', 'text-white');
+        b.classList.add('bg-[#006c75]/8', 'text-[#006c75]');
+      });
+      btn.classList.add('bg-[#006c75]', 'text-white');
+      btn.classList.remove('bg-[#006c75]/8', 'text-[#006c75]');
+
+      const customDates = document.getElementById('tx-custom-dates');
+      if (f === 'custom') {
+        customDates.classList.remove('hidden');
+        if (!document.getElementById('tx-date-start').value) document.getElementById('tx-date-start').value = today().slice(0, 8) + '01';
+        if (!document.getElementById('tx-date-end').value) document.getElementById('tx-date-end').value = today();
+      } else {
+        customDates.classList.add('hidden');
+      }
+
+      renderTransactions();
+    }
+
+    function deleteTransaction(id) {
+      showConfirm('Delete this transaction?', () => {
+        transactions = transactions.filter(x => String(x.id) !== String(id));
+        saveData(); renderTransactions(); toast('Transaction deleted');
+      });
+    }
+    function editTransaction(id) {
+      const tx = transactions.find(x => String(x.id) === String(id));
+      if (!tx) return;
+      openAddModal();
+      txEditId = id;
+      document.getElementById('modal-title').textContent = 'Edit Transaction';
+      document.getElementById('save-btn-text').textContent = 'Update Transaction';
+      document.getElementById('tx-amount').value = tx.amount;
+      document.getElementById('tx-title').value = tx.title;
+      document.getElementById('tx-date').value = tx.date;
+      document.getElementById('tx-time').value = tx.time;
+      document.getElementById('tx-note').value = tx.note || '';
+      document.getElementById('tx-recurring').checked = tx.recurring || false;
+      setTxType(tx.type, document.getElementById('type-' + tx.type));
+      selectCat(tx.category);
+    }
+  </script>
+  <script>
+    // ============================================================
+    // ADD/EDIT MODAL
+    // ============================================================
+    let selectedCat = 'food', selectedType = 'expense';
+
+    function openAddModal() {
+      txEditId = null;
+      document.getElementById('modal-title').textContent = 'Add Transaction';
+      document.getElementById('save-btn-text').textContent = 'Save Transaction';
+      document.getElementById('tx-amount').value = '';
+      document.getElementById('tx-title').value = '';
+      document.getElementById('tx-date').value = today();
+      document.getElementById('tx-time').value = todayTime();
+      document.getElementById('tx-note').value = '';
+      document.getElementById('tx-recurring').checked = false;
+      document.getElementById('tx-edit-id').value = '';
+      selectedType = 'expense'; selectedCat = 'food';
+      renderCatPicker();
+      setTxType('expense', document.getElementById('type-expense'));
+      document.getElementById('modal-add').classList.remove('hidden');
+      document.body.classList.add('no-scroll');
+      document.getElementById('modal-currency-sym').textContent = curSym;
+    }
+    function closeAddModal() {
+      document.getElementById('modal-add').classList.add('hidden');
+      document.body.classList.remove('no-scroll');
+      txEditId = null;
+    }
+    function setTxType(type, btn) {
+      selectedType = type;
+      document.querySelectorAll('.type-btn').forEach(b => {
+        b.classList.remove('bg-white', 'dark:bg-[#006c75]', 'shadow-sm', 'text-[#006c75]', 'dark:text-white');
+        b.classList.add('text-slate-500');
+      });
+      btn.classList.add('bg-white', 'dark:bg-[#006c75]', 'shadow-sm', 'text-[#006c75]', 'dark:text-white');
+      btn.classList.remove('text-slate-500');
+      renderCatPicker();
+    }
+    function renderCatPicker() {
+      const cats = selectedType === 'income' ? INCOME_CATS : EXP_CATS;
+      document.getElementById('cat-picker').innerHTML = cats.map(cat => `
+    <button onclick="selectCat('${cat}')" id="cat-${cat}" class="cat-btn shrink-0 flex flex-col items-center gap-1.5 p-1">
+      <div class="w-14 h-14 rounded-lg ${cat === selectedCat ? 'bg-[#006c75] text-white shadow-lg' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm'} flex items-center justify-center transition-all">
+        <span class="mat">${CATS[cat]?.icon || 'category'}</span>
+      </div>
+      <span class="text-[10px] font-medium capitalize">${cat}</span>
+    </button>`).join('');
+    }
+    function selectCat(cat) {
+      selectedCat = cat;
+      renderCatPicker();
+    }
+    function saveTransaction() {
+      const amount = parseFloat(document.getElementById('tx-amount').value);
+      const title = document.getElementById('tx-title').value.trim();
+      const date = document.getElementById('tx-date').value;
+      if (!amount || amount <= 0) { toast('Enter a valid amount'); return; }
+      if (!title) { toast('Enter a title'); return; }
+      if (!date) { toast('Select a date'); return; }
+
+      const tx = {
+        id: txEditId || uid(),
+        type: selectedType,
+        category: selectedCat,
+        title, amount,
+        date,
+        time: document.getElementById('tx-time').value || '00:00',
+        note: document.getElementById('tx-note').value,
+        recurring: document.getElementById('tx-recurring').checked,
+        createdAt: txEditId ? (transactions.find(x => x.id === txEditId)?.createdAt || new Date().toISOString()) : new Date().toISOString()
+      };
+
+      if (txEditId) {
+        const idx = transactions.findIndex(x => String(x.id) === String(txEditId));
+        if (idx >= 0) transactions[idx] = tx;
+      } else {
+        transactions.unshift(tx);
+      }
+      saveData();
+      closeAddModal();
+      toast(txEditId ? 'Transaction updated!' : 'Transaction added!');
+      if (document.getElementById('screen-dashboard').classList.contains('active')) refreshDashboard();
+      if (document.getElementById('screen-transactions').classList.contains('active')) renderTransactions();
+      checkBudgetAlerts(tx);
+    }
+
+    // Budget alerts
+    function checkBudgetAlerts(tx) {
+      if (tx.type !== 'expense') return;
+      const now = new Date().toISOString().slice(0, 7);
+      const budget = budgets.find(b => b.cat === tx.category);
+      if (!budget) return;
+      const spent = transactions.filter(x => x.type === 'expense' && x.category === tx.category && x.date.startsWith(now)).reduce((a, b) => a + b.amount, 0);
+      if (spent >= budget.limit) {
+        setTimeout(() => toast(`⚠️ ${tx.category} budget exceeded!`), 500);
+        document.getElementById('notif-dot').classList.remove('hidden');
+      } else if (spent >= budget.limit * 0.8) {
+        setTimeout(() => toast(`⚠️ ${tx.category} 80% of budget used`), 500);
+        document.getElementById('notif-dot').classList.remove('hidden');
+      }
+    }
+    function showNotif() { toast('Check your budget screen for alerts'); document.getElementById('notif-dot').classList.add('hidden'); }
+
+    // ============================================================
+    // BUDGETS
+    // ============================================================
+    function openBudgetModal(id = null) {
+      document.getElementById('modal-budget').classList.remove('hidden');
+      document.body.classList.add('no-scroll');
+      document.getElementById('budget-edit-id').value = id || '';
+      if (id) {
+        const bg = budgets.find(b => (b.id || b.cat) === id);
+        if (bg) {
+          document.getElementById('budget-cat').value = bg.cat;
+          document.getElementById('budget-limit').value = bg.limit;
+          document.getElementById('budget-save-btn').textContent = 'Update Budget';
+          return;
+        }
+      }
+      document.getElementById('budget-cat').value = 'food';
+      document.getElementById('budget-limit').value = '';
+      document.getElementById('budget-save-btn').textContent = 'Save Budget';
+    }
+    function closeBudgetModal() { document.getElementById('modal-budget').classList.add('hidden'); document.body.classList.remove('no-scroll'); }
+
+    function saveBudget() {
+      const cat = document.getElementById('budget-cat').value;
+      const limit = parseFloat(document.getElementById('budget-limit').value);
+      const editId = document.getElementById('budget-edit-id').value;
+      if (!limit || limit <= 0) { toast('Enter a valid limit'); return; }
+
+      if (editId) {
+        const idx = budgets.findIndex(b => (b.id || b.cat) === editId);
+        if (idx >= 0) budgets[idx].limit = limit; // only limit updates usually, cat locked or updatable
+      } else {
+        const idx = budgets.findIndex(b => b.cat === cat);
+        if (idx >= 0) budgets[idx] = { cat, limit };
+        else budgets.push({ id: uid(), cat, limit });
+      }
+      saveData(); closeBudgetModal(); renderBudgets(); toast(editId ? 'Budget updated!' : 'Budget saved!');
+    }
+
+    function renderBudgets() {
+      loadData();
+      const now = new Date().toISOString().slice(0, 7);
+      const empty = document.getElementById('budget-empty');
+      const list = document.getElementById('budget-list');
+      const totalBudgeted = budgets.reduce((a, b) => a + b.limit, 0);
+      const totalSpent = budgets.reduce((a, b) => {
+        const spent = transactions.filter(x => x.type === 'expense' && x.category === b.cat && x.date.startsWith(now)).reduce((s, t) => s + t.amount, 0);
+        return a + Math.min(spent, b.limit);
+      }, 0);
+
+      document.getElementById('budget-total').textContent = fmt(totalBudgeted);
+      document.getElementById('budget-spent').textContent = fmt(totalSpent);
+
+      if (budgets.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+
+      list.innerHTML = budgets.map(b => {
+        const spent = transactions.filter(x => x.type === 'expense' && x.category === b.cat && x.date.startsWith(now)).reduce((a, t) => a + t.amount, 0);
+        const pct = Math.min((spent / b.limit) * 100, 100);
+        const exceeded = spent > b.limit;
+        const warn = !exceeded && pct >= 80;
+        const barColor = exceeded ? 'bg-red-500' : warn ? 'bg-orange-500' : 'bg-[#006c75]';
+        const statusText = exceeded ? '<p class="text-[10px] text-red-600 font-bold uppercase">Exceeded</p>' : warn ? '<p class="text-[10px] text-orange-600 font-bold uppercase">Near Limit</p>' : '<p class="text-[10px] text-emerald-600 font-bold uppercase">On Track</p>';
+        const c = CATS[b.cat] || CATS.other;
+        return `
+      <div class="bg-white dark:bg-slate-800 rounded-md p-4 shadow-sm border border-[#006c75]/5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg ${c.color} flex items-center justify-center"><span class="mat">${c.icon}</span></div>
+            <div><p class="text-sm font-bold capitalize">${b.cat}</p><p class="text-[10px] text-slate-500">Monthly budget</p></div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-bold">${fmt(spent)} <span class="text-slate-400 font-medium">/ ${fmt(b.limit)}</span></p>
+            ${statusText}
+          </div>
+        </div>
+        <div class="h-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden">
+          <div class="h-full ${barColor} rounded-lg transition-all" style="width:${pct}%"></div>
+        </div>
+        <div class="flex items-center justify-end gap-3 mt-2">
+          <button onclick="openBudgetModal('${b.id || b.cat}')" class="text-[10px] text-[#006c75] font-bold uppercase">Edit</button>
+          <button onclick="deleteBudget('${b.id || b.cat}')" class="text-[10px] text-red-500 font-bold uppercase">Remove</button>
+        </div>
+      </div>`;
+      }).join('');
+    }
+    function deleteBudget(id) {
+      showConfirm('Delete this budget limit?', () => {
+        budgets = budgets.filter(b => (b.id || b.cat) !== id);
+        saveData(); renderBudgets(); toast('Budget removed');
+      });
+    }
+
+    // ============================================================
+    // REPORTS
+    // ============================================================
+    let repFilterType = 'all';
+
+    function setRepFilter(type, btn) {
+      repFilterType = type;
+      document.querySelectorAll('.rep-filter-btn').forEach(b => {
+        b.classList.remove('bg-[#006c75]', 'text-white');
+        b.classList.add('bg-[#006c75]/10', 'text-[#006c75]');
+      });
+      btn.classList.add('bg-[#006c75]', 'text-white');
+      btn.classList.remove('bg-[#006c75]/10', 'text-[#006c75]');
+      renderReports();
+    }
+
+    function renderReports() {
+      loadData();
+      const dsInput = document.getElementById('rep-date-start');
+      const deInput = document.getElementById('rep-date-end');
+
+      if (!dsInput.value || !deInput.value) {
+        // default to current month if empty
+        dsInput.value = today().slice(0, 7) + '-01';
+        deInput.value = today();
+      }
+
+      const ds = dsInput.value;
+      const de = deInput.value;
+      const msDiff = new Date(de) - new Date(ds);
+
+      // Prev period dates
+      const pdeObj = new Date(ds);
+      pdeObj.setDate(pdeObj.getDate() - 1);
+      const pdsObj = new Date(pdeObj.getTime() - msDiff);
+      const pds = pdsObj.toISOString().slice(0, 10);
+      const pde = pdeObj.toISOString().slice(0, 10);
+
+      let currentList = transactions.filter(x => x.date >= ds && x.date <= de);
+      let prevList = transactions.filter(x => x.date >= pds && x.date <= pde);
+
+      if (repFilterType !== 'all') {
+        currentList = currentList.filter(x => x.type === repFilterType);
+        prevList = prevList.filter(x => x.type === repFilterType);
+      }
+
+      const income = currentList.filter(x => x.type === 'income').reduce((a, b) => a + b.amount, 0);
+      const expense = currentList.filter(x => x.type === 'expense').reduce((a, b) => a + b.amount, 0);
+      const savings = income - expense;
+
+      const pIncome = prevList.filter(x => x.type === 'income').reduce((a, b) => a + b.amount, 0);
+      const pExpense = prevList.filter(x => x.type === 'expense').reduce((a, b) => a + b.amount, 0);
+      const pSavings = pIncome - pExpense;
+
+      const pctStr = (curr, prev) => {
+        if (prev === 0 && curr === 0) return '0%';
+        if (prev === 0) return '+100%';
+        const p = ((curr - prev) / prev) * 100;
+        return (p > 0 ? '+' : '') + p.toFixed(1) + '%';
+      };
+
+      document.getElementById('rep-income').textContent = fmt(income);
+      document.getElementById('rep-expense').textContent = fmt(expense);
+      document.getElementById('rep-savings').textContent = fmt(savings);
+
+      document.getElementById('rep-inc-cmp').innerHTML = `${pctStr(income, pIncome)} vs prev`;
+      document.getElementById('rep-inc-cmp').className = `text-[10px] mt-1 font-bold tracking-wider ${income >= pIncome ? 'text-green-300' : 'text-orange-300'}`;
+
+      document.getElementById('rep-exp-cmp').innerHTML = `${pctStr(expense, pExpense)} vs prev`;
+      document.getElementById('rep-exp-cmp').className = `text-[10px] mt-1 font-bold tracking-wider ${expense <= pExpense ? 'text-emerald-500' : 'text-red-500'}`;
+
+      document.getElementById('rep-sav-cmp').innerHTML = `${pctStr(savings, pSavings)} vs prev`;
+      document.getElementById('rep-sav-cmp').className = `text-[10px] mt-1 font-bold tracking-wider ${savings >= pSavings ? 'text-emerald-500' : 'text-red-500'}`;
+
+      // Chart (Current vs Prev Expense Trend)
+      // Divide range into 5 chunks representing 20% of the period each
+      const chunks = [];
+      const pChunks = [];
+      const W = 360, H = 120;
+      for (let i = 0; i <= 4; i++) {
+        const currChunkMaxDate = new Date(new Date(ds).getTime() + (msDiff * (i / 4)));
+        const prevChunkMaxDate = new Date(new Date(pds).getTime() + (msDiff * (i / 4)));
+
+        // Accumulate sum UP TO this chunk point (running total)
+        const cSum = currentList.filter(x => x.type === 'expense' && new Date(x.date) <= currChunkMaxDate).reduce((a, b) => a + b.amount, 0);
+        const pSum = prevList.filter(x => x.type === 'expense' && new Date(x.date) <= prevChunkMaxDate).reduce((a, b) => a + b.amount, 0);
+
+        chunks.push({ label: (i * 25) + '%', val: cSum });
+        pChunks.push({ label: (i * 25) + '%', val: pSum });
+      }
+
+      const maxVal = Math.max(...chunks.map(c => c.val), ...pChunks.map(c => c.val), 1);
+      const curPts = chunks.map((c, i) => [i * (W / 4), H - 10 - (c.val / maxVal) * (H - 20)]);
+      const prevPts = pChunks.map((c, i) => [i * (W / 4), H - 10 - (c.val / maxVal) * (H - 20)]);
+
+      const mkPath = pts => pts.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(' ');
+      document.getElementById('rep-line-income').setAttribute('d', mkPath(curPts));
+      document.getElementById('rep-line-expense').setAttribute('d', mkPath(prevPts));
+      const area = mkPath(curPts) + ` L${curPts[curPts.length - 1][0]},${H} L0,${H} Z`;
+      document.getElementById('rep-area').setAttribute('d', area);
+      document.getElementById('rep-labels').innerHTML = chunks.map(c => `<span>${c.label}</span>`).join('');
+
+      // top spending category (for selected period)
+      const bycat = {};
+      currentList.filter(x => x.type === 'expense').forEach(x => { bycat[x.category] = (bycat[x.category] || 0) + x.amount; });
+      const sorted = Object.entries(bycat).sort((a, b) => b[1] - a[1]);
+      const maxCat = sorted[0]?.[1] || 1;
+      document.getElementById('rep-top').innerHTML = sorted.map(([cat, amt]) => {
+        const c = CATS[cat] || CATS.other;
+        const count = currentList.filter(x => x.type === 'expense' && x.category === cat).length;
+        return `<div class="bg-white dark:bg-slate-800 p-3 rounded-md border border-[#006c75]/5 shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-lg ${c.color} flex items-center justify-center"><span class="mat text-base">${c.icon}</span></div>
+        <div><p class="text-xs font-bold capitalize">${cat}</p><p class="text-[9px] text-slate-400">${count} transaction${count !== 1 ? 's' : ''}</p></div></div>
+        <p class="text-sm font-bold">${fmt(amt)}</p>
+      </div>
+      <div class="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg"><div class="h-full bg-[#006c75] rounded-lg" style="width:${(amt / maxCat * 100).toFixed(0)}%"></div></div>
+    </div>`;
+      }).join('') || '<p class="text-slate-400 text-sm text-center py-6">No expense data this month.</p>';
+
+      renderCustomCharts(ds, de);
+    }
+
+    // ============================================================
+    // CUSTOM CHARTS
+    // ============================================================
+    let chartInstances = {}; // To store and destroy old chart.js instances
+
+    function openCustomChartModal() {
+      document.getElementById('modal-custom-chart').classList.remove('hidden');
+      document.body.classList.add('no-scroll');
+      document.getElementById('cc-title').value = '';
+    }
+    function closeCustomChartModal() {
+      document.getElementById('modal-custom-chart').classList.add('hidden');
+      document.body.classList.remove('no-scroll');
+    }
+    function saveCustomChart() {
+      const title = document.getElementById('cc-title').value.trim();
+      const type = document.getElementById('cc-type').value;
+      const metric = document.getElementById('cc-metric').value;
+      if (!title) { toast('Please enter a chart title'); return; }
+      
+      customCharts.push({ id: uid(), title, type, metric });
+      saveData();
+      closeCustomChartModal();
+      toast('Custom chart added!');
+      renderReports();
+    }
+    function deleteCustomChart(id) {
+      showConfirm('Remove this custom chart?', () => {
+        customCharts = customCharts.filter(c => c.id !== id);
+        if(chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+        saveData();
+        toast('Chart removed');
+        renderReports();
+      });
+    }
+    
+    function renderCustomCharts(ds, de) {
+      const container = document.getElementById('rep-custom-charts');
+      if (customCharts.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">No custom charts yet.</p>';
+        return;
+      }
+      
+      container.innerHTML = customCharts.map(c => `
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-lg border border-[#006c75]/5 shadow-sm relative">
+          <button onclick="deleteCustomChart('${c.id}')" class="absolute top-3 right-3 text-slate-300 hover:text-red-500 transition-colors"><span class="mat text-sm">delete</span></button>
+          <h3 class="font-bold text-sm mb-4 pr-6">${c.title}</h3>
+          <div class="relative w-full h-48">
+            <canvas id="canvas-${c.id}"></canvas>
+          </div>
+        </div>
+      `).join('');
+      
+      const list = transactions.filter(x => x.date >= ds && x.date <= de);
+      
+      customCharts.forEach(c => {
+        const ctx = document.getElementById('canvas-' + c.id).getContext('2d');
+        if (chartInstances[c.id]) chartInstances[c.id].destroy();
+        
+        let labels = [], data = [], data2 = null;
+        let cType = c.type;
+        let opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+        
+        if (cType === 'spline') { cType = 'line'; opts.elements = { line: { tension: 0.4 } }; }
+        if (cType === 'bar' || cType === 'column') {
+           if(c.type === 'bar') opts.indexAxis = 'y';
+           cType = 'bar';
+        }
+        
+        if (c.metric === 'expense_by_cat' || c.metric === 'income_by_cat') {
+           const isExp = c.metric === 'expense_by_cat';
+           const filtered = list.filter(x => x.type === (isExp ? 'expense' : 'income'));
+           const map = {};
+           filtered.forEach(x => { map[x.category] = (map[x.category]||0) + x.amount; });
+           const sorted = Object.entries(map).sort((a,b)=>b[1]-a[1]);
+           labels = sorted.map(x=>x[0].toUpperCase());
+           data = sorted.map(x=>x[1]);
+           if(cType === 'pie' || cType === 'doughnut') opts.plugins.legend.display = true;
+        } else if (c.metric === 'daily_expense') {
+           const map = {};
+           list.filter(x => x.type === 'expense').forEach(x => { map[x.date] = (map[x.date]||0) + x.amount; });
+           const sorted = Object.entries(map).sort((a,b)=>new Date(a[0])-new Date(b[0]));
+           labels = sorted.map(x=>x[0].slice(5)); // MM-DD
+           data = sorted.map(x=>x[1]);
+        } else if (c.metric === 'income_vs_expense') {
+           const map = {};
+           list.forEach(x => {
+             if(!map[x.date]) map[x.date] = {inc:0, exp:0};
+             if(x.type==='income') map[x.date].inc += x.amount;
+             else map[x.date].exp += x.amount;
+           });
+           const sorted = Object.entries(map).sort((a,b)=>new Date(a[0])-new Date(b[0]));
+           labels = sorted.map(x=>x[0].slice(5));
+           data = sorted.map(x=>x[1].exp); // dataset 1
+           data2 = sorted.map(x=>x[1].inc); // dataset 2
+           opts.plugins.legend.display = true;
+           if(c.type==='combo') cType = 'bar'; // Base type
+        }
+        
+        const datasets = [];
+        if (c.type === 'combo') {
+           datasets.push({ type: 'bar', label: 'Income', data: data2, backgroundColor: '#10b981', borderRadius: 4 });
+           datasets.push({ type: 'line', label: 'Expense', data: data, borderColor: '#f43f5e', tension: 0.4 });
+        } else if (data2) {
+           datasets.push({ label: 'Expense', data: data, backgroundColor: '#f43f5e', borderColor: '#f43f5e' });
+           datasets.push({ label: 'Income', data: data2, backgroundColor: '#10b981', borderColor: '#10b981' });
+        } else {
+           datasets.push({
+             data: data,
+             backgroundColor: ['#006c75','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#f43f5e','#f97316','#eab308'],
+             borderRadius: cType==='bar'?4:0,
+             borderColor: cType==='line'?'#006c75':'transparent',
+             borderWidth: cType==='line'?2:0
+           });
+        }
+        
+        chartInstances[c.id] = new Chart(ctx, { type: cType, data: { labels, datasets }, options: opts });
+      });
+    }
+
+    // ============================================================
+    // SETTINGS & DARK MODE
+    // ============================================================
+    function initSettings() {
+      loadData();
+      const dark = settings.dark || false;
+      document.getElementById('dark-toggle').checked = dark;
+      document.getElementById('currency-select').value = settings.currency || '$';
+    }
+    function toggleDarkMode(on) {
+      document.documentElement.classList.toggle('dark', on);
+      settings.dark = on; saveData();
+    }
+    function saveCurrency(val) {
+      curSym = val; settings.currency = val; saveData();
+      toast('Currency updated to ' + val);
+    }
+    function clearAllData() {
+      showConfirm('This will erase ALL transactions and budgets. Are you sure?', () => {
+        transactions = []; budgets = [];
+        CATS = JSON.parse(JSON.stringify(DEFAULT_CATS));
+        saveData(); loadData();
+        toast('All data cleared');
+        refreshDashboard();
+      });
+    }
+
+    // ============================================================
+    // CATEGORY MANAGER
+    // ============================================================
+    function openCategoryManager() {
+      document.getElementById('modal-category').classList.remove('hidden');
+      document.body.classList.add('no-scroll');
+      renderCategoryManagerList();
+    }
+    function closeCategoryManager() {
+      document.getElementById('modal-category').classList.add('hidden');
+      document.body.classList.remove('no-scroll');
+    }
+    function renderCategoryManagerList() {
+      const list = document.getElementById('cat-manager-list');
+      list.innerHTML = Object.entries(CATS).map(([key, cat]) => `
+    <div class="flex items-center justify-between bg-white dark:bg-slate-800 p-3 rounded-md border border-[#006c75]/5">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-md ${cat.color} flex items-center justify-center font-bold text-[#006c75]" style="background:${cat.hex}30">
+          <span class="mat" style="color:${cat.hex}">${cat.icon}</span>
+        </div>
+        <div>
+          <p class="font-bold text-sm capitalize">${key}</p>
+          <p class="text-[10px] text-slate-500 uppercase">${cat.type}</p>
+        </div>
+      </div>
+      <button onclick="deleteCategory('${key}')" class="text-red-500 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"><span class="mat text-base">delete</span></button>
+    </div>
+  `).join('');
+    }
+    function saveNewCategory() {
+      const id = document.getElementById('new-cat-id').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const type = document.getElementById('new-cat-type').value;
+      const icon = document.getElementById('new-cat-icon').value.trim() || 'category';
+      const hex = document.getElementById('new-cat-hex').value;
+
+      if (!id) { toast('Enter a valid category ID'); return; }
+      if (CATS[id]) { toast('Category already exists!'); return; }
+
+      CATS[id] = { icon, type, hex, color: '' };
+      saveData(); loadData();
+      document.getElementById('new-cat-id').value = '';
+      document.getElementById('new-cat-icon').value = '';
+      renderCategoryManagerList();
+      toast('Category added!');
+    }
+    function deleteCategory(id) {
+      if (Object.keys(CATS).length <= 1) { toast('Cannot delete the last category'); return; }
+      showConfirm(`Delete the "${id}" category?`, () => {
+        delete CATS[id];
+        saveData(); loadData();
+        renderCategoryManagerList();
+        toast('Category deleted');
+      });
+    }
+
+    // ============================================================
+    // EXPORT AND IMPORT
+    // ============================================================
+    function exportCSV() {
+      loadData();
+      if (transactions.length === 0) { toast('No transactions to export'); return; }
+      const data = transactions.map(t => ({
+        Date: t.date, Time: t.time, Title: t.title, Category: t.category, Type: t.type,
+        Amount: t.amount, Note: t.note, Recurring: t.recurring ? 'Yes' : 'No'
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      const base64 = btoa(unescape(encodeURIComponent(csv)));
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8;base64,' + base64;
+      a.download = `EQUITY_Transactions_${today()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast('CSV exported!');
+    }
+
+    function exportExcel() {
+      loadData();
+      if (transactions.length === 0) { toast('No transactions to export'); return; }
+      const data = transactions.map(t => ({
+        Date: t.date, Time: t.time, Title: t.title, Category: t.category, Type: t.type,
+        Amount: t.amount, Note: t.note, Recurring: t.recurring ? 'Yes' : 'No'
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+      const base64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+      const a = document.createElement('a');
+      a.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + base64;
+      a.download = `EQUITY_Transactions_${today()}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast('Excel exported!');
+    }
+
+    function importExcel(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        try {
+          const data = evt.target.result;
+          const wb = XLSX.read(data, { type: 'binary' });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(ws);
+          let added = 0;
+          json.forEach(row => {
+            const type = (row.Type || '').toLowerCase();
+            const cat = (row.Category || 'other').toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (!type || !row.Amount) return; // skip invalid
+            transactions.push({
+              id: uid(),
+              type: type.includes('in') ? 'income' : 'expense',
+              category: CATS[cat] ? cat : 'other',
+              title: row.Title || 'Imported',
+              amount: parseFloat(row.Amount) || 0,
+              date: row.Date || today(),
+              time: row.Time || '12:00',
+              note: row.Note || '',
+              recurring: ((row.Recurring || '').toLowerCase() === 'yes'),
+              createdAt: new Date().toISOString()
+            });
+            added++;
+          });
+          saveData();
+          toast(`Imported ${added} transactions`);
+          refreshDashboard();
+        } catch (err) {
+          console.error(err);
+          toast('Failed to parse Excel file');
+        }
+        e.target.value = ''; // reset
+      };
+      reader.readAsBinaryString(file);
+    }
+
+    function exportPDF() {
+      loadData();
+      if (transactions.length === 0) { toast('No data to export'); return; }
+
+      toast('Generating PDF report...');
+
+      // Calculate Summaries
+      const income = transactions.filter(t => t.type === 'income').reduce((a, b) => a + b.amount, 0);
+      const expense = transactions.filter(t => t.type === 'expense').reduce((a, b) => a + b.amount, 0);
+      const net = income - expense;
+
+      // Create an invisible, unstyled div to host the DOM for html2pdf
+      const div = document.createElement('div');
+      div.id = 'pdf-export-container';
+      div.style.padding = '40px';
+      div.style.color = '#1e293b';
+      div.style.backgroundColor = '#ffffff';
+      div.style.fontFamily = 'Manrope, sans-serif';
+
+      const bycat = {};
+      transactions.filter(t => t.type === 'expense').forEach(t => { bycat[t.category] = (bycat[t.category] || 0) + t.amount; });
+      const sortedCats = Object.entries(bycat).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+      const txListHtml = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 50).map(t => `
+    <tr style="border-bottom: 1px solid #e2e8f0;">
+      <td style="padding: 8px 4px; font-size: 12px;">${t.date}</td>
+      <td style="padding: 8px 4px; font-size: 12px; font-weight: bold;">${t.title}</td>
+      <td style="padding: 8px 4px; font-size: 12px; text-transform: capitalize;">${t.category}</td>
+      <td style="padding: 8px 4px; font-size: 12px; text-align: right; color: ${t.type === 'income' ? '#059669' : '#e11d48'}; font-weight: bold;">
+        ${t.type === 'income' ? '+' : '-'}${curSym}${t.amount.toFixed(2)}
+      </td>
+    </tr>
+  `).join('');
+
+      div.innerHTML = `
+    <div style="border-bottom: 3px solid #006c75; padding-bottom: 20px; margin-bottom: 30px;">
+      <h1 style="color: #006c75; margin:0; font-size:28px;">EQUITY Finance Report</h1>
+      <p style="margin: 5px 0 0 0; color: #64748b;">Generated on ${new Date().toLocaleDateString()}</p>
+    </div>
+    
+    <div style="display: flex; gap: 20px; margin-bottom: 40px;">
+      <div style="flex: 1; padding: 20px; background: #f8fafc; border-radius: 12px; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase;">Total Income</p>
+        <h2 style="margin: 5px 0 0 0; color: #059669; font-size: 24px;">${curSym}${income.toFixed(2)}</h2>
+      </div>
+      <div style="flex: 1; padding: 20px; background: #f8fafc; border-radius: 12px; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase;">Total Expense</p>
+        <h2 style="margin: 5px 0 0 0; color: #e11d48; font-size: 24px;">${curSym}${expense.toFixed(2)}</h2>
+      </div>
+      <div style="flex: 1; padding: 20px; background: #006c75; border-radius: 12px; text-align: center; color: white;">
+        <p style="margin: 0; font-size: 12px; opacity: 0.8; text-transform: uppercase;">Net Balance</p>
+        <h2 style="margin: 5px 0 0 0; font-size: 24px;">${curSym}${net.toFixed(2)}</h2>
+      </div>
+    </div>
+    
+    <h3 style="color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px;">Top Expenses</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 40px;">
+      ${sortedCats.map(([cat, amt]) => `
+        <div style="background: #f1f5f9; padding: 10px 15px; border-radius: 8px; font-size: 14px;">
+          <span style="text-transform: capitalize; font-weight: bold; color: #334155;">${cat}</span>: ${curSym}${amt.toFixed(2)}
+        </div>
+      `).join('') || '<p>No expenses found.</p>'}
+    </div>
+    
+    <h3 style="color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px;">Recent Transactions (Up to 50)</h3>
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead>
+        <tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+          <th style="padding: 10px 4px; font-size: 12px; color: #64748b; text-transform: uppercase;">Date</th>
+          <th style="padding: 10px 4px; font-size: 12px; color: #64748b; text-transform: uppercase;">Title</th>
+          <th style="padding: 10px 4px; font-size: 12px; color: #64748b; text-transform: uppercase;">Category</th>
+          <th style="padding: 10px 4px; font-size: 12px; color: #64748b; text-transform: uppercase; text-align: right;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${txListHtml}
+      </tbody>
+    </table>
+    <p style="text-align: center; font-size: 10px; color: #94a3b8; margin-top: 40px;">End of Report</p>
+  `;
+      document.body.appendChild(div);
+
+      const opt = {
+        margin: 0.5,
+        filename: `EQUITY_Report_${today()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(div).toPdf().get('pdf').then(function(pdf) {
+        const dataUri = pdf.output('datauristring');
+        const a = document.createElement('a');
+        a.href = dataUri;
+        a.download = `EQUITY_Report_${today()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        document.body.removeChild(div);
+        toast('PDF Exported successfully');
+      });
+    }
+
+    // ============================================================
+    // AI INSIGHTS ENGINE
+    // ============================================================
+    function openAIInsights() {
+      document.getElementById('modal-ai-insights').classList.remove('hidden');
+      document.body.classList.add('no-scroll');
+      generateAIInsights();
+    }
+
+    function closeAIInsights() {
+      document.getElementById('modal-ai-insights').classList.add('hidden');
+      document.body.classList.remove('no-scroll');
+    }
+
+    function generateAIInsights() {
+      const container = document.getElementById('ai-insights-content');
+      container.innerHTML = `<div class="flex flex-col items-center justify-center py-10 opacity-60"><span class="mat text-4xl animate-spin text-indigo-500 mb-2">sync</span><p class="text-sm font-bold text-indigo-600">Analyzing patterns...</p></div>`;
+
+      setTimeout(() => {
+        loadData();
+        let insights = [];
+        const now = new Date();
+        const currMonth = now.toISOString().slice(0, 7);
+        const mTx = transactions.filter(t => t.date.startsWith(currMonth));
+        const mExp = mTx.filter(t => t.type === 'expense');
+
+        // 1. Budget Alerts
+        budgets.forEach(b => {
+          const spent = mExp.filter(t => t.category === b.cat).reduce((a, t) => a + t.amount, 0);
+          const pct = spent / b.limit;
+          if (pct > 1) {
+            insights.push({ icon: 'warning', color: 'text-red-500', bg: 'bg-red-50', title: 'Budget Exceeded', desc: `You have exceeded your ${b.cat} budget by ${curSym}${(spent - b.limit).toFixed(2)}.` });
+          } else if (pct > 0.8) {
+            insights.push({ icon: 'trending_up', color: 'text-orange-500', bg: 'bg-orange-50', title: 'Approaching Limit', desc: `Slow down! You've used ${(pct * 100).toFixed(0)}% of your ${b.cat} budget.` });
+          }
+        });
+
+        // 2. Anomaly Detection (Large unusual expense)
+        const allExpAmount = transactions.filter(t => t.type === 'expense').map(t => t.amount);
+        if (allExpAmount.length > 5) {
+          const avg = allExpAmount.reduce((a, b) => a + b, 0) / allExpAmount.length;
+          const recentAnomalies = mExp.filter(t => t.amount > avg * 3); // 3x average
+          if (recentAnomalies.length > 0) {
+            insights.push({ icon: 'search', color: 'text-purple-500', bg: 'bg-purple-50', title: 'Unusual Spending', desc: `Found a large expense: ${recentAnomalies[0].title} for ${curSym}${recentAnomalies[0].amount}. Was this planned?` });
+          }
+        }
+
+        // 3. Top Spending Tip
+        const bycat = {};
+        mExp.forEach(t => { bycat[t.category] = (bycat[t.category] || 0) + t.amount; });
+        const sortedCats = Object.entries(bycat).sort((a, b) => b[1] - a[1]);
+        if (sortedCats.length > 0) {
+          insights.push({ icon: 'analytics', color: 'text-blue-500', bg: 'bg-blue-50', title: 'Spending Trend', desc: `Your top expense this month is ${sortedCats[0][0]} (${curSym}${sortedCats[0][1].toFixed(2)}). Consider lowering this next month.` });
+        }
+
+        // 4. Savings Encouragement
+        const income = mTx.filter(t => t.type === 'income').reduce((a, b) => a + b.amount, 0);
+        const expTotal = mExp.reduce((a, b) => a + b.amount, 0);
+        if (income > 0) {
+          const savingsRate = (income - expTotal) / income;
+          if (savingsRate >= 0.2) {
+            insights.push({ icon: 'celebration', color: 'text-emerald-500', bg: 'bg-emerald-50', title: 'Great Savings Rate', desc: `You're saving ${(savingsRate * 100).toFixed(0)}% of your income this month! Keep it up.` });
+          } else if (savingsRate > 0) {
+            insights.push({ icon: 'lightbulb', color: 'text-amber-500', bg: 'bg-amber-50', title: 'Savings Opportunity', desc: `You're currently saving ${(savingsRate * 100).toFixed(0)}%. Try to reach the 20% rule.` });
+          }
+        }
+
+        if (insights.length === 0) {
+          insights.push({ icon: 'check_circle', color: 'text-green-500', bg: 'bg-green-50', title: 'On Track', desc: `Everything looks good! Keep tracking your expenses.` });
+        }
+
+        container.innerHTML = insights.map(i => `
+      <div class="p-4 rounded-md border border-indigo-50 dark:border-indigo-900/30 shadow-sm bg-white dark:bg-slate-800/80 mb-3">
+        <div class="flex gap-3">
+          <div class="w-10 h-10 rounded-lg flex shrink-0 items-center justify-center ${i.bg} dark:bg-slate-800 ${i.color}"><span class="mat">${i.icon}</span></div>
+          <div>
+            <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">${i.title}</h3>
+            <p class="text-xs text-slate-500 mt-1 leading-relaxed">${i.desc}</p>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+      }, 1000);
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      if (settings.dark) document.documentElement.classList.add('dark');
+      // Auto-seed sample data for first-time users
+      if (transactions.length === 0) {
+        const seed = [
+          { id: uid(), type: 'income', category: 'salary', title: 'Monthly Salary', amount: 5000, date: today(), time: '09:00', note: '', recurring: true, createdAt: new Date().toISOString() },
+          { id: uid(), type: 'expense', category: 'food', title: 'Grocery Store', amount: 120, date: today(), time: '14:00', note: 'Weekly groceries', recurring: false, createdAt: new Date().toISOString() },
+          { id: uid(), type: 'expense', category: 'transport', title: 'Uber Ride', amount: 24.5, date: today(), time: '08:30', note: '', recurring: false, createdAt: new Date().toISOString() },
+          { id: uid(), type: 'expense', category: 'entertainment', title: 'Netflix', amount: 19.99, date: today(), time: '10:00', note: 'Monthly subscription', recurring: true, createdAt: new Date().toISOString() },
+          { id: uid(), type: 'income', category: 'freelance', title: 'Freelance Project', amount: 800, date: today(), time: '16:00', note: 'Design work', recurring: false, createdAt: new Date().toISOString() },
+          { id: uid(), type: 'expense', category: 'shopping', title: 'Amazon Order', amount: 89.99, date: today(), time: '12:00', note: '', recurring: false, createdAt: new Date().toISOString() },
+        ];
+        transactions = seed;
+        budgets = [
+          { id: uid(), cat: 'food', limit: 400 },
+          { id: uid(), cat: 'transport', limit: 150 },
+          { id: uid(), cat: 'entertainment', limit: 100 },
+        ];
+        saveData();
+      }
+
+      // Splash → Dashboard after 2s
+      setTimeout(() => { showScreen('screen-dashboard'); }, 2000);
+    });
+  </script>
+</body>
+
+</html>

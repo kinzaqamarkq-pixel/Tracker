@@ -1,0 +1,13 @@
+{
+  "name": "equity-finance-tracker",
+  "version": "1.0.0",
+  "description": "EQUITY – Income & Expense Tracker",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["finance", "tracker", "budget"],
+  "author": "EQUITY",
+  "license": "MIT"
+}

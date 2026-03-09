@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006c75",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#0f2223",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="max-w-md mx-auto flex flex-col min-h-screen">
+<!-- Header -->
+<header class="flex items-center justify-between p-6">
+<button class="flex items-center justify-center size-10 rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">close</span>
+</button>
+<h1 class="text-lg font-bold">Add Transaction</h1>
+<div class="size-10"></div> <!-- Spacer -->
+</header>
+<main class="flex-1 px-6 pb-24">
+<!-- Amount Section -->
+<section class="text-center py-8">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Amount</p>
+<div class="flex items-center justify-center gap-1">
+<span class="text-3xl font-bold text-primary">$</span>
+<h2 class="text-5xl font-bold tracking-tight">0.00</h2>
+</div>
+</section>
+<!-- Toggle Segment -->
+<div class="mb-8">
+<div class="flex h-12 w-full items-center justify-center rounded-full bg-primary/5 p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 has-[:checked]:bg-white has-[:checked]:shadow-sm has-[:checked]:text-primary text-slate-500 text-sm font-semibold">
+<span>Expense</span>
+<input checked="" class="hidden" name="transaction-type" type="radio" value="Expense"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 has-[:checked]:bg-white has-[:checked]:shadow-sm has-[:checked]:text-primary text-slate-500 text-sm font-semibold">
+<span>Income</span>
+<input class="hidden" name="transaction-type" type="radio" value="Income"/>
+</label>
+</div>
+</div>
+<!-- Form Fields -->
+<div class="space-y-6">
+<!-- Title Field -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold ml-1 text-slate-700 dark:text-slate-300">Title</label>
+<input class="w-full h-14 px-5 rounded-2xl border-none bg-white dark:bg-slate-800 shadow-sm focus:ring-2 focus:ring-primary text-base placeholder:text-slate-400" placeholder="Enter title..." type="text"/>
+</div>
+<!-- Category Picker -->
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-center ml-1">
+<label class="text-sm font-bold text-slate-700 dark:text-slate-300">Category</label>
+<button class="text-xs font-bold text-primary">See All</button>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+<button class="flex flex-col items-center gap-2 shrink-0">
+<div class="size-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">shopping_cart</span>
+</div>
+<span class="text-xs font-medium">Food</span>
+</button>
+<button class="flex flex-col items-center gap-2 shrink-0">
+<div class="size-14 rounded-2xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<span class="text-xs font-medium">Transport</span>
+</button>
+<button class="flex flex-col items-center gap-2 shrink-0">
+<div class="size-14 rounded-2xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined">home</span>
+</div>
+<span class="text-xs font-medium">Rent</span>
+</button>
+<button class="flex flex-col items-center gap-2 shrink-0">
+<div class="size-14 rounded-2xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined">movie</span>
+</div>
+<span class="text-xs font-medium">Leisure</span>
+</button>
+<button class="flex flex-col items-center gap-2 shrink-0">
+<div class="size-14 rounded-2xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined">add</span>
+</div>
+<span class="text-xs font-medium">Other</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<!-- Date Picker -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold ml-1 text-slate-700 dark:text-slate-300">Date</label>
+<div class="relative">
+<input class="w-full h-14 px-5 pr-10 rounded-2xl border-none bg-white dark:bg-slate-800 shadow-sm focus:ring-2 focus:ring-primary text-sm" type="text" value="Oct 24, 2023"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">calendar_today</span>
+</div>
+</div>
+<!-- Time (Optional but nice) -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold ml-1 text-slate-700 dark:text-slate-300">Time</label>
+<div class="relative">
+<input class="w-full h-14 px-5 pr-10 rounded-2xl border-none bg-white dark:bg-slate-800 shadow-sm focus:ring-2 focus:ring-primary text-sm" type="text" value="14:30 PM"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">schedule</span>
+</div>
+</div>
+</div>
+<!-- Note Field -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold ml-1 text-slate-700 dark:text-slate-300">Note</label>
+<textarea class="w-full px-5 py-4 rounded-2xl border-none bg-white dark:bg-slate-800 shadow-sm focus:ring-2 focus:ring-primary text-base placeholder:text-slate-400 resize-none" placeholder="Add a description..." rows="3"></textarea>
+</div>
+</div>
+</main>
+<!-- Save Button -->
+<div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light/95 to-transparent">
+<div class="max-w-md mx-auto">
+<button class="w-full bg-primary text-white h-16 rounded-full font-bold text-lg shadow-xl shadow-primary/30 flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span>Save Transaction</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>
