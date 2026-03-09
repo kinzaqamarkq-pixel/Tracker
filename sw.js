@@ -2,7 +2,11 @@ const CACHE_NAME = 'equity-cache-v2';
 const urlsToCache = [
   './index.html',
   './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './icon-192.png',
+  './icon-512.png',
+  './screenshot1.png',
+  './screenshot2.png'
 ];
 
 self.addEventListener('install', event => {
