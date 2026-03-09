@@ -2116,22 +2116,10 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadData();
       if (settings.dark) document.documentElement.classList.add('dark');
-      // Auto-seed sample data for first-time users
+      // No dummy data seed for first-time users
       if (transactions.length === 0) {
-        const seed = [
-          { id: uid(), type: 'income', category: 'salary', title: 'Monthly Salary', amount: 5000, date: today(), time: '09:00', note: '', recurring: true, createdAt: new Date().toISOString() },
-          { id: uid(), type: 'expense', category: 'food', title: 'Grocery Store', amount: 120, date: today(), time: '14:00', note: 'Weekly groceries', recurring: false, createdAt: new Date().toISOString() },
-          { id: uid(), type: 'expense', category: 'transport', title: 'Uber Ride', amount: 24.5, date: today(), time: '08:30', note: '', recurring: false, createdAt: new Date().toISOString() },
-          { id: uid(), type: 'expense', category: 'entertainment', title: 'Netflix', amount: 19.99, date: today(), time: '10:00', note: 'Monthly subscription', recurring: true, createdAt: new Date().toISOString() },
-          { id: uid(), type: 'income', category: 'freelance', title: 'Freelance Project', amount: 800, date: today(), time: '16:00', note: 'Design work', recurring: false, createdAt: new Date().toISOString() },
-          { id: uid(), type: 'expense', category: 'shopping', title: 'Amazon Order', amount: 89.99, date: today(), time: '12:00', note: '', recurring: false, createdAt: new Date().toISOString() },
-        ];
-        transactions = seed;
-        budgets = [
-          { id: uid(), cat: 'food', limit: 400 },
-          { id: uid(), cat: 'transport', limit: 150 },
-          { id: uid(), cat: 'entertainment', limit: 100 },
-        ];
+        transactions = [];
+        budgets = [];
         saveData();
       }
 
