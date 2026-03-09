@@ -1,7 +1,7 @@
 # EQUITY Finance App – PowerShell HTTP Server
 # Run: powershell -ExecutionPolicy Bypass -File start-server.ps1
 
-$port = 8080
+$port = 8081
 $dir  = $PSScriptRoot
 
 $listener = [System.Net.HttpListener]::new()
